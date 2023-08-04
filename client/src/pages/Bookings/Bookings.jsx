@@ -7,7 +7,6 @@ import PropertyCard from '../../components/PropertyCard/PropertyCard'
 import UserDetailsContext from '../../context/UserDetailsContext'
 
 import '../Properties/Properties.css'
-import { property } from 'lodash'
 
 const Bookings = () => {
 
