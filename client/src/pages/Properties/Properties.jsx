@@ -6,7 +6,6 @@ import useProperties from '../../hooks/useProperties'
 
 import './Properties.css'
 import PropertyCard from '../../components/PropertyCard/PropertyCard'
-import { property } from 'lodash'
 
 const Properties = () => {
 
