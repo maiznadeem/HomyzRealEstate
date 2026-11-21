@@ -75,6 +75,8 @@ cd client && npm run dev
 
 5. Open `http://localhost:3000`. The API runs on `http://localhost:8000`.
 
+   The shared Auth0 application only allows the deployed site, so to log in locally either add `http://localhost:3000` to its Allowed Callback URLs, Allowed Logout URLs and Allowed Web Origins, or point the `VITE_AUTH0_*` variables at your own tenant.
+
 ### Auth0 setup
 
 The client logs in with the Auth0 SPA application and requests an access token for the **Homyz Real Estate** API (`https://homyz-real-estate-backend.vercel.app/`). A post-login Action, *Homyz Real Estate - email claim*, adds the user's verified email to that token as `https://homyz-real-estate/email`, and the server uses that claim, never an email sent in the request, to decide whose favourites and bookings to read or change. If you use your own tenant:
