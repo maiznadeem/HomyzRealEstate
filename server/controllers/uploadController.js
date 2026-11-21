@@ -25,26 +25,15 @@ const RULES = Object.assign(Object.create(null), {
 })
 const REQUIRED = ['timestamp', 'upload_preset', 'folder', 'public_id']
 
-// Public ids already signed, kept a day (well past Cloudinary's one-hour signature lifetime).
+// Every public id ever signed, kept permanently so an id can never be signed twice. One small
+// document per upload, and uploads are rate-limited.
 const NONCES = 'UploadNonce'
-let nonceIndexReady = null
-const ensureNonceIndex = () => {
-    nonceIndexReady ??= prisma.$runCommandRaw({
-        createIndexes: NONCES,
-        indexes: [{ key: { expiresAt: 1 }, name: 'expiresAt_ttl', expireAfterSeconds: 0 }],
-    }).catch((err) => {
-        nonceIndexReady = null
-        throw err
-    })
-    return nonceIndexReady
-}
 
 const claimPublicId = async (publicId, userEmail) => {
-    await ensureNonceIndex()
     // A duplicate _id comes back as a write error in the result rather than as an exception.
     const result = await prisma.$runCommandRaw({
         insert: NONCES,
-        documents: [{ _id: publicId, userEmail, expiresAt: { $date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() } }],
+        documents: [{ _id: publicId, userEmail, signedAt: { $date: new Date().toISOString() } }],
     })
     if (result?.writeErrors?.length || result?.n !== 1) {
         if (result?.writeErrors?.some((e) => e.code === 11000)) {
