@@ -20,6 +20,14 @@ const UploadImage = ({ propertyDetails, setPropertyDetails, nextStep, prevStep }
         nextStep()
     }
 
+    // Each upload gets a fresh random id; the API signs any id only once, so a signature can't be reused.
+    const openWidget = () => {
+        const bytes = crypto.getRandomValues(new Uint8Array(12))
+        const publicId = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("")
+        widgetRef.current?.update({ publicId })
+        widgetRef.current?.open()
+    }
+
     useEffect(()=> {
         cloudinaryRef.current = window.cloudinary
         widgetRef.current = cloudinaryRef.current.createUploadWidget({
@@ -51,7 +59,7 @@ const UploadImage = ({ propertyDetails, setPropertyDetails, nextStep, prevStep }
                 !imageURL ? (
                     <div 
                         className="flexColCenter uploadZone"
-                        onClick={() => widgetRef.current?.open()}
+                        onClick={openWidget}
                     >
                         <AiOutlineCloudUpload size={50} color='grey' />
                         <span>Upload Image</span>
@@ -59,7 +67,7 @@ const UploadImage = ({ propertyDetails, setPropertyDetails, nextStep, prevStep }
                 ) : (
                     <div 
                         className="uploadedImage"
-                        onClick={() => widgetRef.current?.open()}
+                        onClick={openWidget}
                     >
                         <img src={imageURL} alt="House Image" />
                     </div>
