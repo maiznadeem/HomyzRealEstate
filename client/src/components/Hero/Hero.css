@@ -17,6 +17,9 @@
 
 .hero-left {
     gap: 3rem;
+    /* Let the column shrink to the screen instead of growing to fit its widest child. */
+    min-width: 0;
+    max-width: 100%;
 }
 
 .hero-title {
@@ -90,8 +93,13 @@
 }
 
 @media (max-width: 640px) {
-    .hero-container {
-        margin-top: 2rem;
+    /* Padding, not a margin on the container: a margin collapses out of the dark
+       section and shows a white strip under the header. */
+    .hero-wrapper {
+        padding-top: 2rem;
+    }
+    .hero-left {
+        width: 100%;
     }
     .hero-title > h1 {
         font-size: 2.5rem;
