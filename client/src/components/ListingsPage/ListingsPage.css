@@ -1,0 +1,57 @@
+.listings {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.listings-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.25rem 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--line);
+}
+
+.listings-title {
+    color: var(--primary);
+    font-size: clamp(1.6rem, 3vw, 2.1rem);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.listings-intro {
+    margin-top: 0.35rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+    max-width: 40rem;
+}
+
+.listings-search {
+    width: min(100%, 26rem);
+}
+
+.listings-count {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.listings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 0.5rem;
+    /* Cards have inner padding; pull the grid out so photos line up with the heading. */
+    margin: -1rem -1rem 0;
+}
+
+.listings-grid .r-card {
+    max-width: none;
+    margin: 0;
+}
+
+.listings-loading {
+    display: grid;
+    place-items: center;
+    min-height: 40vh;
+}

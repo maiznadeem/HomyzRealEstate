@@ -1,74 +1,132 @@
 .h-wrapper {
-    color: white;
-    z-index: 99;
     position: sticky;
     top: 0;
+    z-index: 99;
+    background: var(--black);
+    color: white;
 }
 
 .h-container {
-    justify-content: space-between !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     padding-top: 1rem !important;
     padding-bottom: 1rem !important;
     color: var(--secondary);
 }
 
+.h-logo {
+    display: flex;
+}
+
 .h-menu {
+    display: flex;
+    align-items: center;
     gap: 2rem;
-    cursor: pointer;
 }
 
-.h-menu a {
-    text-decoration: none;
+.h-menu > a,
+.h-link {
     position: relative;
-    transition: all 0.3s ease;
+    padding: 0.25rem 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition: color 150ms ease;
 }
 
-.h-menu a:hover {
+.h-menu > a::after,
+.h-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 0;
+    height: 2px;
+    background: var(--blue);
+    transition: width 200ms ease;
+}
+
+.h-menu > a:hover,
+.h-link:hover,
+.h-menu > a.active {
     color: white;
 }
 
-.h-menu a::before {
-    content: '';
-    position: absolute;
-    bottom: -3px;
-    left: 0;
-    width: 0;
-    height: 1px;
-    background-color: white;
-    transition: all 0.3s ease;
-}
-
-.h-menu a:hover::before {
+.h-menu > a:hover::after,
+.h-link:hover::after,
+.h-menu > a.active::after {
     width: 100%;
 }
 
 .menu-icon {
     display: none;
+    border: none;
+    background: none;
+    color: white;
+    cursor: pointer;
+    padding: 0.25rem;
 }
 
 @media (max-width: 768px) {
     .menu-icon {
-        display: block;
+        display: flex;
     }
 
+    /* Phone menu: a panel under the header, hidden (not pushed off-screen) when closed. */
     .h-menu {
-        z-index: 99;
-        color: var(--black);
         position: absolute;
-        top: 3rem;
-        right: 4rem;
-        background: white;
+        top: calc(100% - 0.25rem);
+        right: 1rem;
+        left: 1rem;
+        z-index: 99;
         flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        padding: 0.5rem;
+        border-radius: 12px;
+        background: white;
+        color: var(--primary);
         font-weight: 500;
-        gap: 2rem;
-        padding: 3rem;
-        border-radius: 10px;
-        align-items: flex-start;
-        box-shadow: 0px 0px 4px rgba(0,0,0,0.05);
-        transition: all 300ms ease-in;
+        box-shadow: 0 18px 40px -12px rgba(19, 17, 16, 0.35);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-0.5rem);
+        transition: opacity 150ms ease, transform 150ms ease, visibility 150ms;
     }
 
-    .h-menu a:hover {
-        color: var(--black);
+    .h-menu--open {
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+    }
+
+    .h-menu > a,
+    .h-link {
+        padding: 0.85rem 1rem;
+        border-radius: 8px;
+        text-align: left;
+    }
+
+    .h-menu > a::after,
+    .h-link::after {
+        display: none;
+    }
+
+    .h-menu > a:hover,
+    .h-link:hover,
+    .h-menu > a.active {
+        color: var(--blue);
+        background: var(--lightBlue);
+    }
+
+    .h-menu > .button {
+        margin: 0.5rem;
+    }
+
+    .h-menu > .mantine-Avatar-root {
+        margin: 0.5rem 1rem;
     }
 }

@@ -1,67 +1,70 @@
-import React from 'react'
+import React, { useState } from 'react'
 import CountUp from 'react-countup'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 
 import SearchBar from '../SearchBar/SearchBar'
+import useProperties from '../../hooks/useProperties'
 
 import './Hero.css'
 
 const Hero = () => {
+    const navigate = useNavigate()
+    const [query, setQuery] = useState('')
+    const reduceMotion = useReducedMotion()
+    const { data } = useProperties()
+
+    // Real numbers from the listings rather than made-up marketing figures.
+    const listings = data ?? []
+    const stats = [
+        { value: listings.length, label: 'Homes listed' },
+        { value: new Set(listings.map((p) => p.city?.trim().toLowerCase()).filter(Boolean)).size, label: 'Cities' },
+        { value: new Set(listings.map((p) => p.country?.trim().toLowerCase()).filter(Boolean)).size, label: 'Countries' },
+    ]
+
+    const search = (q) => navigate(q ? `/properties?search=${encodeURIComponent(q)}` : '/properties')
+
     return (
         <section className="hero-wrapper">
             <div className="paddings innerWidth hero-container">
                 <div className="flexColStart hero-left">
                     <div className="hero-title">
-                        <div className="orange-circle" />
+                        <div className="orange-circle" aria-hidden="true" />
                         <motion.h1
-                            initial={{ y: "2rem", opacity: 0 }}
+                            initial={reduceMotion ? false : { y: "2rem", opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ duration: 2, type: "spring" }}
                         >
                             Discover
                             <br />
-                            Most Suitable
+                            your next
                             <br />
-                            Property
+                            home
                         </motion.h1>
                     </div>
-                    <div className="flexColStart hero-description">
-                        <span className='secondaryText'>Discover beautiful homes suited to your lifestyle</span>
-                        <span className='secondaryText'>Forget all difficulties in finding a perfect place to live</span>
-                    </div>
-                    <SearchBar />
-                    <div className="stats">
-                        <div className="flexColStart stat">
-                            <span>
-                                <CountUp start={8800} end={9000} duration={4} />
-                                <span>+</span>
-                            </span>
-                            <span className='secondaryText'>Premium Products</span>
-                        </div>
-                        <div className="flexColStart stat">
-                            <span>
-                                <CountUp start={1950} end={2000} duration={4} />
-                                <span>+</span>
-                            </span>
-                            <span className='secondaryText'>Happy Customers</span>
-                        </div>
-                        <div className="flexColStart stat">
-                            <span>
-                                <CountUp end={28} />
-                                <span>+</span>
-                            </span>
-                            <span className='secondaryText'>Award Winning</span>
-                        </div>
-                    </div>
+                    <p className="hero-description">
+                        Browse homes for sale, save the ones you love and book a visit in a few clicks.
+                    </p>
+                    <SearchBar value={query} onChange={setQuery} onSubmit={search} />
+                    {listings.length > 0 && (
+                        <dl className="stats">
+                            {stats.map((stat) => (
+                                <div className="stat" key={stat.label}>
+                                    <dt className="secondaryText">{stat.label}</dt>
+                                    <dd><CountUp end={stat.value} duration={reduceMotion ? 0 : 2} /></dd>
+                                </div>
+                            ))}
+                        </dl>
+                    )}
                 </div>
                 <div className="flexCenter hero-right">
-                    <motion.div 
+                    <motion.div
                         className="image-container"
-                        initial={{ x: "7rem", opacity: 0 }}
+                        initial={reduceMotion ? false : { x: "7rem", opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ duration: 2, type: "spring" }}
                     >
-                        <img src="/hero-image.png" alt="Hero Image" />
+                        <img src="/hero-image.png" alt="Modern apartment building with tall windows" />
                     </motion.div>
                 </div>
             </div>

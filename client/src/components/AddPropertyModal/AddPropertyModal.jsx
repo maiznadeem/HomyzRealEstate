@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Container, Modal, Stepper, Group, Button } from '@mantine/core'
+import { Container, Modal, Stepper } from '@mantine/core'
 
 import AddLocation from '../AddLocation/AddLocation';
 import UploadImage from '../UploadImage/UploadImage';

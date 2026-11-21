@@ -1,73 +1,64 @@
-import React, { useState } from 'react'
-import { BiMenuAltRight } from 'react-icons/bi'
+import React, { useEffect, useState } from 'react'
+import { BiMenuAltRight, BiX } from 'react-icons/bi'
 import OutsideClickHandler from 'react-outside-click-handler'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
 
 import ProfileMenu from '../ProfileMenu/ProfileMenu'
 import AddPropertyModal from '../AddPropertyModal/AddPropertyModal'
-import useHeaderColor from '../../hooks/useHeaderColor'
 import useAuthCheck from '../../hooks/useAuthCheck'
+import useLogin from '../../hooks/useLogin'
 
 import './Header.css'
+
+const CONTACT_EMAIL = 'contact.maiznadeem@gmail.com'
 
 const Header = () => {
 
     const [menuOpened, setMenuOpened] = useState(false)
-    const headerColor = useHeaderColor()
-    const { loginWithRedirect, isAuthenticated, user, logout } = useAuth0()
-    const { validateLogin } = useAuthCheck()
     const [modalOpened, setModalOpened] = useState(false)
+    const { isAuthenticated, user, logout } = useAuth0()
+    const { validateLogin } = useAuthCheck()
+    const login = useLogin()
+    const { pathname } = useLocation()
 
-    const getMenuStyles = (menuOpened) => {
-        if (document.documentElement.clientWidth <= 800) {
-            return {right: !menuOpened && "-100%"}
-        }
-    }
-
-    const handleLoginClick = async () => {
-        try {
-          await loginWithRedirect();
-        } catch (error) {
-          console.error('Error during login:', error);
-        }
-    };
+    // Close the phone menu whenever the page changes.
+    useEffect(() => { setMenuOpened(false) }, [pathname])
 
     const handleAddPropertyClick = () => {
-        if (validateLogin()) {
-            setModalOpened(true)
-        }
+        setMenuOpened(false)
+        if (validateLogin()) setModalOpened(true)
     }
 
     return (
-        <section className="h-wrapper" style={{ background: headerColor }}>
-            <div className="h-container flexCenter paddings innerWidth">
-                <Link to="/">
-                    <img src="/logo.png" alt="Logo" width={100} />
+        <header className="h-wrapper">
+            <div className="h-container paddings innerWidth">
+                <Link to="/" className="h-logo" aria-label="Homyz home">
+                    <img src="/logo.png" alt="Homyz" width={100} height={38} />
                 </Link>
-                <OutsideClickHandler
-                    onOutsideClick={() => {setMenuOpened(false)}}
-                >
-                    <div 
-                        className="flexCenter h-menu"
-                        style={getMenuStyles(menuOpened)}
-                    >
+                <OutsideClickHandler onOutsideClick={() => setMenuOpened(false)}>
+                    <nav id="main-menu" className={`h-menu ${menuOpened ? 'h-menu--open' : ''}`} aria-label="Main">
                         <NavLink to="/properties">Properties</NavLink>
-                        <a onClick={handleAddPropertyClick} >Add Property</a>
-                        <AddPropertyModal opened={modalOpened} setOpened={setModalOpened} />
-                        <a href="mailto:contact.maiznadeem@gmail.com">Contact Us</a>
-                        {
-                            !isAuthenticated ?
-                            <button className="button" onClick={handleLoginClick} >Login</button>
-                            : <ProfileMenu user={user} logout={logout} />
-                        }
-                    </div>
+                        <button type="button" className="h-link" onClick={handleAddPropertyClick}>Add property</button>
+                        <a href={`mailto:${CONTACT_EMAIL}`}>Contact</a>
+                        {!isAuthenticated
+                            ? <button type="button" className="button" onClick={login}>Log in</button>
+                            : <ProfileMenu user={user} logout={logout} />}
+                    </nav>
+                    <button
+                        type="button"
+                        className="menu-icon"
+                        aria-label={menuOpened ? 'Close menu' : 'Open menu'}
+                        aria-expanded={menuOpened}
+                        aria-controls="main-menu"
+                        onClick={() => setMenuOpened((prev) => !prev)}
+                    >
+                        {menuOpened ? <BiX size={28} /> : <BiMenuAltRight size={28} />}
+                    </button>
                 </OutsideClickHandler>
-                <div className="menu-icon" onClick={() => setMenuOpened(prev => !prev)} >
-                    <BiMenuAltRight size={30} />
-                </div>
+                <AddPropertyModal opened={modalOpened} setOpened={setModalOpened} />
             </div>
-        </section>
+        </header>
     )
 }
 

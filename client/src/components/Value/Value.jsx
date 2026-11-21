@@ -19,15 +19,15 @@ const Value = () => {
             <div className="paddings innerWidth flexCenter v-container">
                 <div className="flexColStart v-left">
                     <div className="image-container">
-                        <img src="/value.png" alt="House" />
+                        <img src="/value.png" alt="Modern house with a dark facade and wooden panels" />
                     </div>
                 </div>
                 <div className="flexColStart v-right">
-                    <span className="orangeText">Our Value</span>
-                    <span className="primaryText">Value We Give To You</span>
-                    <span className="secondaryText">
-                        We are always ready to help by providing the best services for you. <br /> We believe a good place to live can make your life better
-                    </span>
+                    <span className="orangeText">Why Homyz</span>
+                    <h2 className="primaryText">Find, save and visit homes in one place</h2>
+                    <p className="secondaryText v-intro">
+                        Homyz keeps your search simple: browse every listing, keep a shortlist and book viewings without phone calls.
+                    </p>
                     <Accordion
                         className="accordion"
                         allowMultipleExpanded={false}
@@ -44,13 +44,13 @@ const Value = () => {
 
                                                     return (
                                                         <>
-                                                            <div className={`flexCenter icon ${classname}`}>
+                                                            <div className={`flexCenter icon ${classname}`} aria-hidden="true">
                                                                 {item.icon}
                                                             </div>
-                                                            <span className="primaryText">
+                                                            <span className="primaryText accordion-heading">
                                                                 {item.heading}
                                                             </span>
-                                                            <div className="flexCenter icon">
+                                                            <div className={`flexCenter icon chevron ${classname}`} aria-hidden="true">
                                                                 <MdOutlineArrowDropDown size={20} />
                                                             </div>
                                                         </>
@@ -60,7 +60,7 @@ const Value = () => {
                                         </AccordionItemButton>
                                     </AccordionItemHeading>
                                     <AccordionItemPanel>
-                                        <p className="secondaryText">{item.detail}</p>
+                                        <p className="secondaryText accordion-detail">{item.detail}</p>
                                     </AccordionItemPanel>
                                 </AccordionItem>
                             );

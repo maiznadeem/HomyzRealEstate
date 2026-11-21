@@ -25,24 +25,15 @@ api.interceptors.request.use(async (request) => {
 
 const errorMessage = (err, fallback) => err?.response?.data?.message || fallback
 
+// Listing reads don't toast: the pages show their own loading and error states.
 export const getAllProperties = async () => {
-    try {
-        const response = await api.get("/residency/getall")
-        return response.data
-    } catch (err) {
-        toast.error(errorMessage(err, "Something went wrong while loading properties."))
-        throw err
-    }
+    const response = await api.get("/residency/getall")
+    return response.data
 }
 
 export const getProperty = async (id) => {
-    try {
-        const response = await api.get(`/residency/${id}`)
-        return response.data
-    } catch (err) {
-        toast.error(errorMessage(err, "Something went wrong while loading this property."))
-        throw err
-    }
+    const response = await api.get(`/residency/${id}`)
+    return response.data
 }
 
 export const createUser = async () => {

@@ -1,0 +1,29 @@
+.heart {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: none;
+    border-radius: 50%;
+    background: rgba(19, 17, 16, 0.35);
+    color: white;
+    cursor: pointer;
+    transition: background 150ms ease, color 150ms ease;
+}
+
+.heart:hover {
+    background: rgba(19, 17, 16, 0.55);
+}
+
+.heart--saved {
+    color: #fa3e5f;
+    background: white;
+}
+
+.heart--saved:hover {
+    background: #fff0f3;
+}
+
+.heart:disabled {
+    cursor: progress;
+}

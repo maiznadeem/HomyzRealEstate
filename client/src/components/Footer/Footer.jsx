@@ -1,32 +1,26 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 import './Footer.css'
 
-const Footer = () => {
-    return (
-        <section className="f-wrapper">
-            <div className="paddings innerWidth flexCenter f-container">
-                <div className="flexColStart f-left">
-                    <img src="/logo2.png" alt="Logo" width={120} />
-                    <span className='secondaryText'>
-                        Our vision is to make all people
-                        <br />
-                        the best place to live for them.
-                    </span>
-                </div>
-                <div className="flexColStart f-right">
-                    <span className='primaryText'>Information</span>
-                    <span className='secondaryText'>145 New York, FL 5467, USA</span>
-                    <div className="flexCenter f-menu">
-                        <span>Properties</span>
-                        <span>Services</span>
-                        <span>Products</span>
-                        <span>About Us</span>
-                    </div>
-                </div>
+const Footer = () => (
+    <footer className="f-wrapper">
+        <div className="paddings innerWidth f-container">
+            <div className="f-brand">
+                <img src="/logo2.png" alt="Homyz" width={120} height={45} />
+                <p>Find a home, save the ones you like and book a visit, all in one place.</p>
             </div>
-        </section>
-    )
-}
+            <nav className="f-menu" aria-label="Footer">
+                <Link to="/properties">Properties</Link>
+                <Link to="/favourites">Favourites</Link>
+                <Link to="/bookings">Bookings</Link>
+                <a href="mailto:contact.maiznadeem@gmail.com">Contact</a>
+            </nav>
+        </div>
+        <div className="innerWidth f-bottom">
+            <span>© {new Date().getFullYear()} Homyz Real Estate</span>
+        </div>
+    </footer>
+)
 
 export default Footer

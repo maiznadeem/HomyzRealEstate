@@ -13,12 +13,19 @@
 }
 
 .inner-container .secondaryText {
-    color: rgba(255,255,255,0.587);
+    max-width: 32rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1rem;
+    line-height: 1.6;
 }
 
 .inner-container .button {
-    background: #5A73D7;
-    border: 2px solid white;
-    box-shadow: var(--shadow);
-    border-radius: 10px;
+    background: white;
+    color: var(--blue);
+    font-weight: 600;
+    border-radius: 8px;
+}
+
+.inner-container .button:hover {
+    background: var(--lightBlue);
 }

@@ -4,7 +4,25 @@
 }
 
 .r-head {
-    margin-bottom: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.75rem 2rem;
+    margin-bottom: 4.5rem;
+}
+
+.r-head .secondaryText {
+    margin-top: 0.25rem;
+}
+
+.r-all {
+    color: var(--blue);
+    font-weight: 600;
+}
+
+.r-all:hover {
+    text-decoration: underline;
 }
 
 .r-right {
@@ -17,19 +35,27 @@
 
 .r-buttons {
     position: absolute;
-    gap: 1rem;
-    top: -4rem;
+    gap: 0.5rem;
+    top: -3.25rem;
     right: 0;
 }
 
 .r-buttons > button {
-    font-size: 1.2rem;
-    padding: 0.2rem 0.8rem;
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1rem;
     color: var(--primary);
-    border: none;
-    border-radius: 5px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
     background-color: white;
     cursor: pointer;
+}
+
+.r-buttons > button:hover {
+    border-color: var(--blue);
+    color: var(--blue);
 }
 
 .r-buttons > button[disabled] {
@@ -40,10 +66,12 @@
 
 @media (max-width: 640px) {
     .r-head {
-        align-items: center;
+        margin-bottom: 1.5rem;
     }
     .r-buttons {
-        position: initial;
+        position: static;
+        justify-content: flex-start;
+        margin-bottom: 1rem;
     }
 }
   
