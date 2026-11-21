@@ -14,6 +14,7 @@ import BookingModal from '../../components/BookingModal/BookingModal'
 import UserDetailsContext from '../../context/UserDetailsContext'
 import { cancelBooking, getProperty } from '../../utils/api'
 import Heart from '../../components/Heart/Heart'
+import { PROPERTY_PLACEHOLDER, showPlaceholderOnError } from '../../utils/images'
 
 import './Property.css'
 
@@ -65,7 +66,7 @@ const Property = () => {
                 <div className="like">
                     <Heart id={id} />
                 </div>
-                <img src={data?.image} alt="Home Image" />
+                <img src={data?.image || PROPERTY_PLACEHOLDER} alt="Home Image" onError={showPlaceholderOnError} />
                 <div className="flexCenter property-details">
                     <div className="flexColStart left">
                         <div className="flexStart head">
