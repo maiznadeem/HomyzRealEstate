@@ -3,7 +3,7 @@ import { auth } from 'express-oauth2-jwt-bearer'
 // The "Homyz Real Estate" API in Auth0. Its post-login Action adds the user's
 // verified email to access tokens under this namespace.
 export const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE || 'https://homyz-real-estate-backend.vercel.app/'
-const ISSUER_BASE_URL = process.env.AUTH0_ISSUER_BASE_URL || 'https://dev-ccw5bra5gc5nxss7.us.auth0.com'
+const ISSUER_BASE_URL = process.env.AUTH0_ISSUER_BASE_URL || 'https://homyz-real-estate.us.auth0.com'
 const CLAIM_NAMESPACE = 'https://homyz-real-estate/'
 
 const verifyToken = auth({
