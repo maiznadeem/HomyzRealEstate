@@ -91,6 +91,12 @@ export const getAllBookings = async () => {
     }
 }
 
+// Signs the upload parameters the Cloudinary widget is about to send.
+export const signUpload = async (paramsToSign) => {
+    const res = await api.post(`/upload/signature`, { paramsToSign })
+    return res.data.signature
+}
+
 export const createResidency = async (data) => {
     await api.post(`/residency/create`, { data })
 }
