@@ -1,0 +1,34 @@
+/* Header at the top, footer at the bottom of the window even when a page is short. */
+.layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: white;
+}
+
+.layout-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.layout-main > * {
+    flex: 1;
+}
+
+.skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -3rem;
+    z-index: 200;
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    background: white;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.skip-link:focus {
+    top: 1rem;
+}

@@ -1,0 +1,30 @@
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.5rem 0.5rem 0.5rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background-color: white;
+    box-shadow: 0 10px 30px -18px rgba(19, 17, 16, 0.5);
+}
+
+.search-bar:focus-within {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(64, 102, 255, 0.2);
+}
+
+.search-bar > input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.95rem;
+    color: var(--black);
+}
+
+.search-bar > .button {
+    flex-shrink: 0;
+}

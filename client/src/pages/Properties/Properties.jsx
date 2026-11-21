@@ -1,59 +1,14 @@
-import React, { useState } from 'react'
-import { PuffLoader } from 'react-spinners'
+import React from 'react'
+import { MdOutlineHomeWork } from 'react-icons/md'
 
-import SearchBar from '../../components/SearchBar/SearchBar'
-import useProperties from '../../hooks/useProperties'
-import PropertyCard from '../../components/PropertyCard/PropertyCard'
+import ListingsPage from '../../components/ListingsPage/ListingsPage'
 
-import './Properties.css'
-
-const Properties = () => {
-
-    const { data, isError, isLoading } = useProperties()
-    const [ filter, setFilter ] = useState("")
-
-    if (isError) {
-        return (
-            <div className="wrapper">
-                <span>Error while fetching data.</span>
-            </div>
-        )
-    }
-
-    if (isLoading) {
-        return (
-            <div className="wrapper flexCenter" style={{ height: "60vh" }}>
-                <PuffLoader 
-                    height="80"
-                    width="80"
-                    radius={1}
-                    color='#4066FF'
-                    aria-label='puff-loading'
-                />
-            </div>
-        )
-    }
-
-    return (
-        <div className='wrapper'>
-            <div className="flexColCenter paddings innerWidth p-container">
-                <SearchBar filter={filter} setFilter={setFilter} />
-                <div className="paddings flexCenter properties">
-                    {
-                        data.filter( 
-                            property => 
-                                property.title.toLowerCase().includes(filter.toLocaleLowerCase()) ||
-                                property.city.toLowerCase().includes(filter.toLocaleLowerCase()) ||
-                                property.country.toLowerCase().includes(filter.toLocaleLowerCase())
-                        ).map(
-                            (card, i) => 
-                                <PropertyCard card={card} key={i} />
-                        )
-                    }
-                </div>
-            </div>
-        </div>
-    )
-}
+const Properties = () => (
+    <ListingsPage
+        title="Properties"
+        intro="Every home listed on Homyz. Search by title, city or country."
+        empty={{ icon: <MdOutlineHomeWork />, title: 'No properties listed yet', text: 'New homes will appear here as soon as they are listed.' }}
+    />
+)
 
 export default Properties

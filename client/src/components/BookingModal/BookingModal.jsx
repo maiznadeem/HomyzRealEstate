@@ -14,7 +14,7 @@ const BookingModal = ({ opened, setOpened, propertyId }) => {
     const [value, setValue] = useState(null)
 
     const handleBookingSuccess = () => {
-        toast.success("The visit is successfully booked.", { position: "bottom-right" })
+        toast.success("Visit booked.", { position: "bottom-right" })
         setUserDetails( prev => ({
             ...prev,
             bookings: [
@@ -35,7 +35,7 @@ const BookingModal = ({ opened, setOpened, propertyId }) => {
         <Modal
             opened={opened}
             onClose={() => setOpened(false)}
-            title="Select your date of visit."
+            title="Choose a date for your visit"
             centered
         >
             <div className="flexColCenter" style={{ gap: "1rem" }} >
@@ -43,7 +43,7 @@ const BookingModal = ({ opened, setOpened, propertyId }) => {
                 <Button
                     disabled={!value || isLoading}
                     onClick={() => mutate()}
-                >Book Visit</Button>
+                >Book visit</Button>
             </div>
         </Modal>
     )

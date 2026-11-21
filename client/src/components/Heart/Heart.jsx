@@ -1,19 +1,21 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext } from 'react'
 import { AiFillHeart } from 'react-icons/ai'
 import { useMutation } from 'react-query'
 
 import useAuthCheck from '../../hooks/useAuthCheck'
 import UserDetailsContext from '../../context/UserDetailsContext'
 import { toFavourites } from '../../utils/api'
-import { checkFavourites, updateFavourites } from '../../utils/common'
+import { updateFavourites } from '../../utils/common'
 
-const Heart = ({ id }) => {
+import './Heart.css'
 
-    const [heartColor, setHeartColor] = useState('white')
+const Heart = ({ id, className = '' }) => {
+
     const { validateLogin } = useAuthCheck()
     const { userDetails: { favourites }, setUserDetails } = useContext(UserDetailsContext)
+    const saved = Boolean(favourites?.includes(id))
 
-    const { mutate } = useMutation({
+    const { mutate, isLoading } = useMutation({
         mutationFn: () => toFavourites(id),
         onSuccess: () => {
             setUserDetails( prev => ({
@@ -23,25 +25,21 @@ const Heart = ({ id }) => {
         }
     })
 
-    const handleLike = () => {
-        if (validateLogin()) {
-            mutate()
-        }
-    }
-
-    useEffect (() => {
-        setHeartColor(() => checkFavourites(id, favourites))
-    }, [favourites])
-
     return (
-        <AiFillHeart
-            size={24}
-            color={heartColor}
+        <button
+            type="button"
+            className={`heart ${saved ? 'heart--saved' : ''} ${className}`}
+            aria-pressed={saved}
+            aria-label={saved ? 'Remove from favourites' : 'Save to favourites'}
+            disabled={isLoading}
             onClick={(e) => {
+                e.preventDefault()
                 e.stopPropagation()
-                handleLike()
-            }} 
-        />
+                if (validateLogin()) mutate()
+            }}
+        >
+            <AiFillHeart size={22} aria-hidden="true" />
+        </button>
     )
 }
 

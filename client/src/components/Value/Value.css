@@ -14,6 +14,15 @@
     gap: 0.5rem;
 }
 
+.v-right h2.primaryText {
+    line-height: 1.25;
+}
+
+.v-intro {
+    max-width: 34rem;
+    line-height: 1.6;
+}
+
 .accordion {
     margin-top: 2rem;
     border: none;
@@ -36,8 +45,27 @@
     background: white;
     padding: 1rem;
     width: 100%;
-    justify-content: space-between !important;
-    cursor: pointer;    
+    flex-wrap: nowrap !important;
+    gap: 1rem;
+    cursor: pointer;
+}
+
+.accordion-heading {
+    flex: 1;
+    text-align: left;
+}
+
+.accordion-detail {
+    padding: 0 1rem 0 4.25rem;
+    line-height: 1.6;
+}
+
+.chevron svg {
+    transition: transform 200ms ease;
+}
+
+.chevron.expanded svg {
+    transform: rotate(180deg);
 }
 
 .icon {
@@ -63,7 +91,10 @@
     }
     @media (max-width: 768px) {
         .accordion-button .primaryText {
-            font-size: 0.8rem;
+            font-size: 0.95rem;
+        }
+        .accordion-detail {
+            padding-left: 1rem;
         }
     }
 }

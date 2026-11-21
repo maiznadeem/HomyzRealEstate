@@ -10,14 +10,13 @@ const Map = ({ address, city, country }) => {
             zoom={1}
             scrollWheelZoom={false}
             style={{
-                height: "40vh",
+                height: "min(26rem, 50vh)",
                 width: "100%",
-                marginTop: "20px",
                 zIndex: 0,
             }}
         >
             <TileLayer url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' />
-            <GeoCoderMarker address={`${address} ${city} ${country}}`} />
+            <GeoCoderMarker address={[address, city, country].filter(Boolean).join(', ')} />
         </MapContainer>
     )
 }

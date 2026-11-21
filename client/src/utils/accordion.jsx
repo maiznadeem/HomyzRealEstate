@@ -1,23 +1,25 @@
-import { HiShieldCheck } from "react-icons/hi";
-import { MdCancel, MdAnalytics } from "react-icons/md";
+import { MdSearch, MdOutlineFavoriteBorder, MdOutlineEventAvailable } from "react-icons/md";
+
+// What the site actually does for someone looking for a home.
 const data = [
     {
-        icon: <HiShieldCheck/>,
-        heading: "Best interest rates on the market",
+        icon: <MdSearch />,
+        heading: "Every listing in one place",
         detail:
-        "Exercitation in fugiat est ut ad ea cupidatat ut in cupidatat occaecat ut occaecat consequat est minim minim esse tempor laborum consequat esse adipisicing eu reprehenderit enim.",
+            "Search homes by title, city or country, then open any listing to see its rooms, price and location on a map.",
     },
     {
-        icon: <MdCancel />,
-        heading: "Prevent unstable prices",
+        icon: <MdOutlineFavoriteBorder />,
+        heading: "Save the homes you like",
         detail:
-        "Exercitation in fugiat est ut ad ea cupidatat ut in cupidatat occaecat ut occaecat consequat est minim minim esse tempor laborum consequat esse adipisicing eu reprehenderit enim.",
+            "Tap the heart on a listing to keep it in your favourites, so you can compare homes and come back to them on any device.",
     },
     {
-        icon: <MdAnalytics />,
-        heading: "Best price on the market",
+        icon: <MdOutlineEventAvailable />,
+        heading: "Book a visit online",
         detail:
-        "Exercitation in fugiat est ut ad ea cupidatat ut in cupidatat occaecat ut occaecat consequat est minim minim esse tempor laborum consequat esse adipisicing eu reprehenderit enim.",
+            "Pick a date to book a viewing. Your visits are listed under Bookings, and you can cancel one from the listing at any time.",
     },
 ];
+
 export default data;

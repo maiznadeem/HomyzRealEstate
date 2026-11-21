@@ -11,7 +11,7 @@ const useBookings = () => {
     const { data, isLoading, isError, refetch } = useQuery({
         queryKey: "allBookings",
         queryFn: getAllBookings,
-        onSuccess: (data) => setUserDetails(prev => ({ ...prev, bookings: data ?? [] })),
+        onSuccess: (data) => setUserDetails(prev => ({ ...prev, bookings: data ?? [], bookingsLoaded: true })),
         enabled: Boolean(userDetails?.registered),
         staleTime: 30000,
     })

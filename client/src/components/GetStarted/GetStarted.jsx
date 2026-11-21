@@ -1,25 +1,20 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 import './GetStarted.css'
 
-const GetStarted = () => {
-    return (
-        <section className="g-wrapper">
-            <div className="paddings innnerWidth g-container">
-                <div className="flexColCenter inner-container">
-                    <span className='primaryText'>Get Started with Homyz</span>
-                    <span className='secondaryText'>
-                        Subscribe and find super attractive price quotes from us.
-                        <br />
-                        Find your residence soon
-                    </span>
-                    <button className="button">
-                        <a href="mailto:contact.maiznadeem@gmail.com">Get Started</a>
-                    </button>
-                </div>
+const GetStarted = () => (
+    <section className="g-wrapper">
+        <div className="paddings innerWidth g-container">
+            <div className="flexColCenter inner-container">
+                <h2 className='primaryText'>Ready to find your next home?</h2>
+                <p className='secondaryText'>
+                    Browse every listing, save your favourites and book a visit when you’re ready.
+                </p>
+                <Link className="button" to="/properties">Browse properties</Link>
             </div>
-        </section>
-    )
-}
+        </div>
+    </section>
+)
 
 export default GetStarted

@@ -1,82 +1,51 @@
 import React from 'react'
-import { MdCall } from 'react-icons/md'
-import { BsFillChatDotsFill } from 'react-icons/bs'
-import { HiChatBubbleBottomCenter } from 'react-icons/hi2'
 import { FaEnvelope } from 'react-icons/fa'
+import { MdOutlineHomeWork } from 'react-icons/md'
+import { Link } from 'react-router-dom'
 
 import './Contact.css'
 
-const Contact = () => {
-    return (
-        <section className="c-wrapper">
-            <div className="paddings innerWidth flexCenter c-container">
-                <div className="flexColStart c-left">
-                    <span className='orangeText'>Our Contacts</span>
-                    <span className='primaryText'>Easily Contact Us</span>
-                    <span className='secondaryText'>We always ready to help by providijng the best services for you. We beleive a good blace to live can make your life better</span>
-                    <div className="flexColStart contactModes">
-                        <div className="flexStart row">
-                            <div className="flexColCenter mode">
-                                <div className="flexStart">
-                                    <div className="flexCenter icon">
-                                        <MdCall size={25} />
-                                    </div>
-                                    <div className="flexColStart detail">
-                                        <span className='primaryText'>Call</span>
-                                        <span className='secondaryText'>021 123 145 14</span>
-                                    </div>
-                                </div>
-                                <div className="flexCenter button">Call Now</div>
-                            </div>
-                            <div className="flexColCenter mode">
-                                <div className="flexStart">
-                                    <div className="flexCenter icon">
-                                        <BsFillChatDotsFill size={25} />
-                                    </div>
-                                    <div className="flexColStart detail">
-                                        <span className='primaryText'>Chat</span>
-                                        <span className='secondaryText'>join.skype.com/chat</span>
-                                    </div>
-                                </div>
-                                <div className="flexCenter button">Chat Now</div>
+const CONTACT_EMAIL = 'contact.maiznadeem@gmail.com'
+
+const Contact = () => (
+    <section className="c-wrapper">
+        <div className="paddings innerWidth flexCenter c-container">
+            <div className="flexColStart c-left">
+                <span className='orangeText'>Contact</span>
+                <h2 className='primaryText'>Questions about a home?</h2>
+                <p className='secondaryText c-intro'>
+                    Ask about a listing, a visit you’ve booked or putting your own home on Homyz. We reply by email.
+                </p>
+                <div className="contactModes">
+                    <div className="mode">
+                        <div className="mode-head">
+                            <div className="flexCenter icon" aria-hidden="true"><FaEnvelope size={22} /></div>
+                            <div className="detail">
+                                <h3 className='primaryText'>Email</h3>
+                                <span className='secondaryText'>{CONTACT_EMAIL}</span>
                             </div>
                         </div>
-                        <div className="flexStart row">
-                            <div className="flexColCenter mode">
-                                <div className="flexStart">
-                                    <div className="flexCenter icon">
-                                        <FaEnvelope size={25} />
-                                    </div>
-                                    <div className="flexColStart detail">
-                                        <span className='primaryText'>Email</span>
-                                        <span className='secondaryText'>c@realestate.com</span>
-                                    </div>
-                                </div>
-                                <div className="flexCenter button">Email Us</div>
-                            </div>
-                            <div className="flexColCenter mode">
-                                <div className="flexStart">
-                                    <div className="flexCenter icon">
-                                        <BsFillChatDotsFill size={25} />
-                                    </div>
-                                    <div className="flexColStart detail">
-                                        <span className='primaryText'>Message</span>
-                                        <span className='secondaryText'>021 123 145 14</span>
-                                    </div>
-                                </div>
-                                <div className="flexCenter button">Text Message</div>
-                            </div>
-                        </div>
+                        <a className="flexCenter button" href={`mailto:${CONTACT_EMAIL}`}>Send an email</a>
                     </div>
-                </div>
-                <div className="flexColEnd c-right">
-                    <div className="image-container">
-                        <img src="/contact.jpg" alt="Home" />
+                    <div className="mode">
+                        <div className="mode-head">
+                            <div className="flexCenter icon" aria-hidden="true"><MdOutlineHomeWork size={22} /></div>
+                            <div className="detail">
+                                <h3 className='primaryText'>Book a visit</h3>
+                                <span className='secondaryText'>Open any listing and pick a date</span>
+                            </div>
+                        </div>
+                        <Link className="flexCenter button" to="/properties">Browse properties</Link>
                     </div>
                 </div>
             </div>
-        </section>
-    )
-}
+            <div className="flexColEnd c-right">
+                <div className="image-container">
+                    <img src="/contact.jpg" alt="House with large windows surrounded by trees" />
+                </div>
+            </div>
+        </div>
+    </section>
+)
 
 export default Contact
