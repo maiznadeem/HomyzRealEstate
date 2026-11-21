@@ -57,6 +57,7 @@ DATABASE_URL=your_mongodb_url_here
 CORS_ORIGINS=http://localhost:3000
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+CRON_SECRET=a_long_random_string
 ```
 
    `CORS_ORIGINS` lists the sites allowed to call the API (default: the deployed site only). The Cloudinary key signs image uploads; without it, property image uploads are disabled. Optional overrides: `CLOUDINARY_CLOUD_NAME` (default `dwujonydh`), `AUTH0_ISSUER_BASE_URL` (default `https://homyz-real-estate.us.auth0.com`) and `AUTH0_AUDIENCE` (default `https://homyz-real-estate-backend.vercel.app/`).
@@ -90,7 +91,9 @@ The client logs in with the Auth0 SPA application and requests an access token f
 
 ### Database
 
-The server uses Prisma with MongoDB Atlas on the free M0 tier. Atlas pauses free clusters after long inactivity; if the site shows "Something went wrong" while loading properties, resume the cluster in Atlas.
+The server uses Prisma with MongoDB Atlas on the free M0 tier. Atlas pauses free clusters after long inactivity, so a daily Vercel cron (`crons` in `server/vercel.json`) calls `GET /api/keepalive`, which runs one small query. Vercel sends `Authorization: Bearer $CRON_SECRET`; without `CRON_SECRET` set the endpoint always returns 401. If the site still shows "Something went wrong" while loading properties, resume the cluster in Atlas.
+
+Use a database user limited to the app's database (role `readWrite` on `Homyz-Database`), not one with access to every database on the cluster.
 
 ### Security and abuse limits
 
