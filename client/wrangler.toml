@@ -1,0 +1,13 @@
+# Static site on Cloudflare Workers (homyz.himaiz.com), behind the zone's WAF. No Worker script runs, so
+# requests don't count against the account's daily Worker quota.
+# Deploy from client/ with CLOUDFLARE_API_TOKEN set: npm run deploy
+name = "homyz-web"
+compatibility_date = "2026-11-01"
+account_id = "803b01a6e3e53ef41f175e2a54e51372"
+workers_dev = false
+preview_urls = false
+routes = [{ pattern = "homyz.himaiz.com", custom_domain = true }]
+
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"

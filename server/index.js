@@ -7,15 +7,18 @@ import { userRoute } from './routes/userRoute.js'
 import { residencyRoute } from './routes/residencyRoute.js'
 import { uploadRoute } from './routes/uploadRoute.js'
 import { apiLimiter } from './middleware/rateLimit.js'
+import { originAuth } from './middleware/originAuth.js'
 import { keepAlive } from './controllers/keepAliveController.js'
 
 const app = express()
 
 const PORT = process.env.PORT || 8000
 // Browsers may only call the API from these sites. Set CORS_ORIGINS (comma-separated) for local development.
-const CORS_ORIGINS = (process.env.CORS_ORIGINS || 'https://homyz-real-estate.vercel.app').split(',').map((o) => o.trim())
+const CORS_ORIGINS = (process.env.CORS_ORIGINS || 'https://homyz.himaiz.com,https://homyz-real-estate.vercel.app').split(',').map((o) => o.trim())
 
 app.disable('x-powered-by')
+// First: requests must come through the Cloudflare Worker (see middleware/originAuth.js).
+app.use(originAuth)
 app.use(helmet())
 app.use(cors({ origin: CORS_ORIGINS, methods: ['GET', 'POST'], maxAge: 600 }))
 app.use(express.json({ limit: '20kb' }))

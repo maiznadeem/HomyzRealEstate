@@ -7,7 +7,7 @@ const config = {
     clientID: env.VITE_AUTH0_CLIENT_ID || 'zp5pITppkg9r3dRAhYCQZcg92grND5nb',
     // The "Homyz Real Estate" API in Auth0; the server checks tokens against it.
     audience: env.VITE_AUTH0_AUDIENCE || 'https://homyz-real-estate-backend.vercel.app/',
-    apiBaseURL: env.VITE_API_BASE_URL || 'https://homyz-real-estate-backend.vercel.app/api',
+    apiBaseURL: env.VITE_API_BASE_URL || 'https://api.homyz.himaiz.com/api',
     // Property images go to Cloudinary through a signed preset; the API signs each upload.
     cloudName: env.VITE_CLOUDINARY_CLOUD_NAME || "dwujonydh",
     cloudinaryApiKey: env.VITE_CLOUDINARY_API_KEY || "694932458262786",

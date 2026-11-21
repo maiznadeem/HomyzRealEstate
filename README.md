@@ -1,4 +1,4 @@
-[![Homyz Banner](https://raw.githubusercontent.com/maiznadeem/HomyzRealEstate/main/client/src/assets/Banner.png)](https://homyz-real-estate.vercel.app/)
+[![Homyz Banner](https://raw.githubusercontent.com/maiznadeem/HomyzRealEstate/main/client/src/assets/Banner.png)](https://homyz.himaiz.com/)
 
 # Homyz Real Estate
 
@@ -6,7 +6,11 @@ Introducing Homyz - the ultimate real estate platform! Buy or sell properties ha
 
 ## Deployment
 
-Homyz Real Estate is now live on Vercel! Explore the website here: [**Homyz Real Estate Website**](https://homyz-real-estate.vercel.app/).
+Homyz Real Estate is live at [**homyz.himaiz.com**](https://homyz.himaiz.com/).
+
+- **Web:** the Vite build is served by the Cloudflare Worker `homyz-web` (Workers static assets, `client/wrangler.toml`, security headers in `client/public/_headers`). Deploy from `client/` with `CLOUDFLARE_API_TOKEN` set: `npm run deploy`.
+- **API:** `api.homyz.himaiz.com` is the Cloudflare Worker `homyz-api-edge` (`edge/api/`), which forwards to the Vercel project `homyz-real-estate-backend`. It adds a shared secret (`X-Origin-Auth`) and the visitor's address (`X-Client-IP`). With `ORIGIN_AUTH` set and `ORIGIN_AUTH_MODE=enforce`, the API refuses requests that skip Cloudflare (403), except Vercel's own cron call to `/api/keepalive`. The rate limiter trusts `X-Client-IP` only when the secret matches.
+- Both hostnames sit behind the `himaiz.com` zone's Cloudflare WAF. The backend still deploys from Vercel on push to `main`.
 
 ## Key Features
 
@@ -60,7 +64,7 @@ CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 CRON_SECRET=a_long_random_string
 ```
 
-   `CORS_ORIGINS` lists the sites allowed to call the API (default: the deployed site only). The Cloudinary key signs image uploads; without it, property image uploads are disabled. Optional overrides: `CLOUDINARY_CLOUD_NAME` (default `dwujonydh`), `AUTH0_ISSUER_BASE_URL` (default `https://homyz-real-estate.us.auth0.com`) and `AUTH0_AUDIENCE` (default `https://homyz-real-estate-backend.vercel.app/`).
+   `CORS_ORIGINS` lists the sites allowed to call the API (default: the deployed site only). `ORIGIN_AUTH` and `ORIGIN_AUTH_MODE` are production-only (see Deployment); leave them unset locally. The Cloudinary key signs image uploads; without it, property image uploads are disabled. Optional overrides: `CLOUDINARY_CLOUD_NAME` (default `dwujonydh`), `AUTH0_ISSUER_BASE_URL` (default `https://homyz-real-estate.us.auth0.com`) and `AUTH0_AUDIENCE` (default `https://homyz-real-estate-backend.vercel.app/`).
 
 3. Create `client/.env.local` to point the client at your local server:
 
@@ -79,7 +83,7 @@ cd client && npm run dev
 
 5. Open `http://localhost:3000`. The API runs on `http://localhost:8000`.
 
-   Deployed environments allow only production origins. The site's Auth0 application and the API's CORS list contain only `https://homyz-real-estate.vercel.app`, and Vercel preview deployments can't call the production API. Don't add `localhost` to the production Auth0 application. To log in locally, create a separate development application (or tenant) that allows `http://localhost:3000`, and point the `VITE_AUTH0_*` variables in `client/.env.local` at it. Browsing listings works locally without logging in.
+   Deployed environments allow only production origins. The site's Auth0 application and the API's CORS list contain only the production site, and Vercel preview deployments can't call the production API. Don't add `localhost` to the production Auth0 application. To log in locally, create a separate development application (or tenant) that allows `http://localhost:3000`, and point the `VITE_AUTH0_*` variables in `client/.env.local` at it. Browsing listings works locally without logging in.
 
 ### Auth0 setup
 
@@ -102,7 +106,8 @@ Use a database user limited to the app's database (role `readWrite` on `Homyz-Da
 - **Rate limits** (shared across serverless instances through a `RateLimit` collection in MongoDB that expires on its own): 300 API requests per 15 minutes per IP; 120 signed-in actions per 15 minutes per account; 5 new properties per day per account and 15 per IP; 15 image uploads per hour per account and 40 per IP.
 - **Data caps:** at most 20 properties, 200 favourites and 50 bookings per account, and favourites and bookings must point at real properties.
 - **Validation:** property fields have length and range limits, prices and room counts must be whole numbers, visit dates must fall within the next year, and property images must be Cloudinary URLs from the site's folder.
-- **Headers and CORS:** `helmet` sets security headers, browsers may only call the API from the deployed site, and request bodies are limited to 20 KB.
+- **Headers and CORS:** `helmet` sets security headers on the API and `client/public/_headers` sets a CSP and other headers on the site; browsers may only call the API from the deployed site, and request bodies are limited to 20 KB.
+- **Origin lock:** the API only answers requests that came through Cloudflare (see Deployment).
 - **Privacy:** public property reads don't include the owner's email address.
 
 **Contributing**
