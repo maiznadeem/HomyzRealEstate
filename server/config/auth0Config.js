@@ -17,7 +17,8 @@ const verifyToken = auth({
 const requireUserEmail = (req, res, next) => {
     const payload = req.auth?.payload ?? {}
     const email = payload[`${CLAIM_NAMESPACE}email`]
-    if (email) {
+    const verified = payload[`${CLAIM_NAMESPACE}email_verified`] === true
+    if (email && verified) {
         req.userEmail = String(email).toLowerCase()
         return next()
     }

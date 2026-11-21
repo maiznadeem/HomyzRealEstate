@@ -1,11 +1,12 @@
 import express from 'express'
 
 import jwtCheck from '../config/auth0Config.js'
+import { userLimiter } from '../middleware/rateLimit.js'
 import { bookVisit, cancelBooking, createUser, getAllBookings, getAllFavourites, manageFavourites } from '../controllers/userController.js'
 
 const router = express.Router()
 
-router.use(jwtCheck)
+router.use(jwtCheck, userLimiter)
 
 router.post("/register", createUser)
 router.post("/bookvisit/:id", bookVisit)

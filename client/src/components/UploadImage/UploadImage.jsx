@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { AiOutlineCloudUpload } from 'react-icons/ai'
 import { Button, Group } from '@mantine/core'
+import { toast } from 'react-toastify'
 
 import config from '../../../config'
+import { errorMessage, signUpload } from '../../utils/api'
 
 import './UploadImage.css'
 
@@ -22,10 +24,22 @@ const UploadImage = ({ propertyDetails, setPropertyDetails, nextStep, prevStep }
         cloudinaryRef.current = window.cloudinary
         widgetRef.current = cloudinaryRef.current.createUploadWidget({
             cloudName: config.cloudName,
+            apiKey: config.cloudinaryApiKey,
             uploadPreset: config.uploadPreset,
+            folder: config.uploadFolder,
+            // Every upload is signed by the API, which checks the user is logged in and rate-limits them.
+            uploadSignature: (callback, paramsToSign) => {
+                signUpload(paramsToSign)
+                    .then(callback)
+                    .catch((err) => toast.error(errorMessage(err, "Could not start the upload. Please try again."), { position: "bottom-right" }))
+            },
+            sources: ["local", "camera"],
+            multiple: false,
             maxFiles: 1,
+            clientAllowedFormats: ["jpg", "jpeg", "png", "webp"],
+            maxFileSize: 5 * 1024 * 1024,
         }, (err, result) => {
-            if (result.event === "success") {
+            if (result?.event === "success") {
                 setImageURL(result.info.secure_url)
             }
         })
