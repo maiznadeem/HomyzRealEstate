@@ -1,22 +1,30 @@
+import 'dotenv/config'
 import express from 'express'
-import dotenv from 'dotenv'
 import cors from 'cors'
+import helmet from 'helmet'
 
 import { userRoute } from './routes/userRoute.js'
 import { residencyRoute } from './routes/residencyRoute.js'
-
-dotenv.config({ quiet: true })
+import { uploadRoute } from './routes/uploadRoute.js'
+import { apiLimiter } from './middleware/rateLimit.js'
 
 const app = express()
 
 const PORT = process.env.PORT || 8000
+// Browsers may only call the API from these sites. Set CORS_ORIGINS (comma-separated) for local development.
+const CORS_ORIGINS = (process.env.CORS_ORIGINS || 'https://homyz-real-estate.vercel.app').split(',').map((o) => o.trim())
 
-app.use(express.json())
-app.use(cors())
+app.disable('x-powered-by')
+app.use(helmet())
+app.use(cors({ origin: CORS_ORIGINS, methods: ['GET', 'POST'], maxAge: 600 }))
+app.use(express.json({ limit: '20kb' }))
 
 app.get("/api/health", (req, res) => res.send({ ok: true }))
+app.use("/api", apiLimiter)
 app.use("/api/user", userRoute)
 app.use("/api/residency", residencyRoute)
+app.use("/api/upload", uploadRoute)
+app.use((req, res) => res.status(404).json({ message: "Not found." }))
 
 // Always answer with JSON so the client can show the message.
 // eslint-disable-next-line no-unused-vars

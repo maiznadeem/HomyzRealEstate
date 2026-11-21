@@ -54,9 +54,12 @@ cd ../server && npm install
 ```
 PORT=8000
 DATABASE_URL=your_mongodb_url_here
+CORS_ORIGINS=http://localhost:3000
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 ```
 
-   Optional overrides: `AUTH0_ISSUER_BASE_URL` (default `https://dev-ccw5bra5gc5nxss7.us.auth0.com`) and `AUTH0_AUDIENCE` (default `https://homyz-real-estate-backend.vercel.app/`).
+   `CORS_ORIGINS` lists the sites allowed to call the API (default: the deployed site only). The Cloudinary key signs image uploads; without it, property image uploads are disabled. Optional overrides: `CLOUDINARY_CLOUD_NAME` (default `dwujonydh`), `AUTH0_ISSUER_BASE_URL` (default `https://dev-ccw5bra5gc5nxss7.us.auth0.com`) and `AUTH0_AUDIENCE` (default `https://homyz-real-estate-backend.vercel.app/`).
 
 3. Create `client/.env.local` to point the client at your local server:
 
@@ -88,6 +91,16 @@ The client logs in with the Auth0 SPA application and requests an access token f
 ### Database
 
 The server uses Prisma with MongoDB Atlas on the free M0 tier. Atlas pauses free clusters after long inactivity; if the site shows "Something went wrong" while loading properties, resume the cluster in Atlas.
+
+### Security and abuse limits
+
+- **Accounts:** every user action needs an Auth0 access token whose verified email the server reads from the token. Unverified emails can browse but not act.
+- **Image uploads:** property photos upload straight to Cloudinary through the signed preset `homyz_property_images`, which stores them in the *Homyz Real Estate* folder, accepts only jpg, png and webp, and caps them at 2000 px. The API (`POST /api/upload/signature`) signs each upload only for a logged-in user, only for that preset and folder, and only for an upload starting now.
+- **Rate limits** (shared across serverless instances through a `RateLimit` collection in MongoDB that expires on its own): 300 API requests per 15 minutes per IP; 120 signed-in actions per 15 minutes per account; 5 new properties per day per account and 15 per IP; 15 image uploads per hour per account and 40 per IP.
+- **Data caps:** at most 20 properties, 200 favourites and 50 bookings per account, and favourites and bookings must point at real properties.
+- **Validation:** property fields have length and range limits, prices and room counts must be whole numbers, visit dates must fall within the next year, and property images must be Cloudinary URLs from the site's folder.
+- **Headers and CORS:** `helmet` sets security headers, browsers may only call the API from the deployed site, and request bodies are limited to 20 KB.
+- **Privacy:** public property reads don't include the owner's email address.
 
 **Contributing**
 
