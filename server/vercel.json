@@ -6,5 +6,8 @@
     ],
     "routes": [
         { "src": "/(.*)", "dest": "/" }
+    ],
+    "crons": [
+        { "path": "/api/keepalive", "schedule": "0 6 * * *" }
     ]
 }
