@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 
 import Heart from '../Heart/Heart'
 
-import { PROPERTY_PLACEHOLDER, showPlaceholderOnError } from '../../utils/images'
+import { propertyImageUrl, showPlaceholderOnError } from '../../utils/images'
 
 import './PropertyCard.css'
 
@@ -19,7 +19,7 @@ const PropertyCard = ({card}) => {
             onClick={() => navigate(`../properties/${card.id}`)}
         >
             <Heart id={card?.id} />
-            <img src={card.image || PROPERTY_PLACEHOLDER} alt="home" loading="lazy" onError={showPlaceholderOnError} />
+            <img src={propertyImageUrl(card.image, "card")} alt="home" loading="lazy" onError={showPlaceholderOnError} />
             <div className='flexColStart'>
                 <span className="secondaryText r-price">
                     <span style={{ color: "orange" }}>$</span>
