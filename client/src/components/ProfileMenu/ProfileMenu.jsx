@@ -13,14 +13,13 @@ const ProfileMenu = ({user, logout}) => {
             </Menu.Target>
             <Menu.Dropdown>
                 <Menu.Item onClick={() => {
-                    navigate("./favourites", { replace: true })
+                    navigate("/favourites")
                 }} >Favourites</Menu.Item>
                 <Menu.Item onClick={() => {
-                    navigate("./bookings", { replace: true })
+                    navigate("/bookings")
                 }} >Bookings</Menu.Item>
                 <Menu.Item onClick={() => {
-                    localStorage.clear()
-                    logout()
+                    logout({ logoutParams: { returnTo: window.location.origin } })
                 }}>Logout</Menu.Item>
             </Menu.Dropdown>
         </Menu>

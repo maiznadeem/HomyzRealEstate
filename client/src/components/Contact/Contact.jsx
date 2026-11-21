@@ -71,7 +71,7 @@ const Contact = () => {
                 </div>
                 <div className="flexColEnd c-right">
                     <div className="image-container">
-                        <img src="./contact.jpg" alt="Home" />
+                        <img src="/contact.jpg" alt="Home" />
                     </div>
                 </div>
             </div>

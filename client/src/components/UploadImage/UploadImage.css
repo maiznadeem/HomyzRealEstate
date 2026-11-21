@@ -15,7 +15,7 @@
     width: 80%;
     border-radius: 10px;
     cursor: pointer;
-    overflow: hidden;pointer
+    overflow: hidden;
 }
 
 .uploadedImage > img {
