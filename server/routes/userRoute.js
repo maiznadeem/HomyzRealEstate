@@ -5,11 +5,13 @@ import { bookVisit, cancelBooking, createUser, getAllBookings, getAllFavourites,
 
 const router = express.Router()
 
-router.post("/register", jwtCheck, createUser)
-router.post("/bookvisit/:id", jwtCheck, bookVisit)
+router.use(jwtCheck)
+
+router.post("/register", createUser)
+router.post("/bookvisit/:id", bookVisit)
 router.post("/getallbookings", getAllBookings)
-router.post("/cancelbooking/:id", jwtCheck, cancelBooking)
-router.post("/managefavourites/:id", jwtCheck, manageFavourites)
-router.post("/getallfavourites", jwtCheck, getAllFavourites)
+router.post("/cancelbooking/:id", cancelBooking)
+router.post("/managefavourites/:id", manageFavourites)
+router.post("/getallfavourites", getAllFavourites)
 
 export { router as userRoute }

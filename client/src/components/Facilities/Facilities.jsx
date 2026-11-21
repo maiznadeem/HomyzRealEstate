@@ -1,12 +1,10 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import { Box, Button, Group, NumberInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { useAuth0 } from '@auth0/auth0-react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 
-import { createResidency } from '../../utils/api';
-import UserDetailsContext from '../../context/UserDetailsContext'
+import { createResidency, errorMessage } from '../../utils/api';
 import useProperties from '../../hooks/useProperties'
 
 const Facilities = ({ prevStep, propertyDetails, setPropertyDetails, setOpened, setActiveStep }) => {
@@ -36,16 +34,14 @@ const Facilities = ({ prevStep, propertyDetails, setPropertyDetails, setOpened, 
         }
     };
 
-    const { user } = useAuth0()
-    const { userDetails: { token } } = useContext(UserDetailsContext)
     const { refetch: refetchProperties } = useProperties()
 
     const { mutate, isLoading } = useMutation({
         mutationFn: () => createResidency({
-            ...propertyDetails, facilities: { bedrooms, parkings, bathrooms }, userEmail: user?.email,
-        }, token),
-        onError: ({ response }) => toast.error(response.data.message, {position: "bottom-right"}),
-        onSettled: ()=> {
+            ...propertyDetails, facilities: { bedrooms, parkings, bathrooms },
+        }),
+        onError: (err) => toast.error(errorMessage(err, "Could not add the property. Please try again."), {position: "bottom-right"}),
+        onSuccess: ()=> {
             toast.success("Property Added Successfully", {position: "bottom-right"});
             setPropertyDetails({
                     title: "",
@@ -59,7 +55,7 @@ const Facilities = ({ prevStep, propertyDetails, setPropertyDetails, setOpened, 
                     bedrooms: 0,
                     parkings: 0,
                     bathrooms: 0,
-                }, userEmail: user?.email
+                },
             })
             setOpened(false)
             setActiveStep(0)

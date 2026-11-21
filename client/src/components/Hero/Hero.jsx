@@ -61,7 +61,7 @@ const Hero = () => {
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ duration: 2, type: "spring" }}
                     >
-                        <img src="./hero-image.png" alt="Hero Image" />
+                        <img src="/hero-image.png" alt="Hero Image" />
                     </motion.div>
                 </div>
             </div>

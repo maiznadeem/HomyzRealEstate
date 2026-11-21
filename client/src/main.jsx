@@ -14,10 +14,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         domain={config.domain}
         clientId={config.clientID}
         authorizationParams={{
-            redirect_uri: "https://homyz-real-estate.vercel.app"
+            redirect_uri: window.location.origin,
+            audience: config.audience,
+            scope: "openid profile email offline_access",
         }}
-        audience="https://dev-ccw5bra5gc5nxss7.us.auth0.com/api/v2/"
-        scope="openid profile email"
+        // Refresh tokens keep users signed in across reloads without third-party cookies.
+        useRefreshTokens
+        cacheLocation="localstorage"
     >
         <App />
     </Auth0Provider>

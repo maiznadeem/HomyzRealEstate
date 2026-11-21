@@ -43,7 +43,7 @@ const Header = () => {
         <section className="h-wrapper" style={{ background: headerColor }}>
             <div className="h-container flexCenter paddings innerWidth">
                 <Link to="/">
-                    <img src="./logo.png" alt="Logo" width={100} />
+                    <img src="/logo.png" alt="Logo" width={100} />
                 </Link>
                 <OutsideClickHandler
                     onOutsideClick={() => {setMenuOpened(false)}}

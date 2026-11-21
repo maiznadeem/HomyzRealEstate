@@ -5,7 +5,6 @@ import { PuffLoader } from 'react-spinners'
 import { FaShower } from 'react-icons/fa'
 import { MdMeetingRoom, MdLocationPin } from 'react-icons/md'
 import { AiTwotoneCar } from 'react-icons/ai'
-import { useAuth0 } from '@auth0/auth0-react'
 import { Button } from '@mantine/core'
 import { toast } from 'react-toastify'
 
@@ -26,12 +25,11 @@ const Property = () => {
 
     const [ modalOpened, setModalOpened ] = useState(false)
     const { validateLogin } = useAuthCheck() 
-    const { user } = useAuth0()
 
-    const { userDetails: { token, bookings }, setUserDetails } = useContext(UserDetailsContext)
+    const { userDetails: { bookings }, setUserDetails } = useContext(UserDetailsContext)
 
     const { mutate: removeBooking, isLoading: removing } = useMutation({
-        mutationFn: () => cancelBooking(id, user?.email, token),
+        mutationFn: () => cancelBooking(id),
         onSuccess: () => {
             setUserDetails( prev => ({
                 ...prev,
@@ -124,7 +122,6 @@ const Property = () => {
                             opened={modalOpened}
                             setOpened={setModalOpened}
                             propertyId={id}
-                            email={user?.email}
                         />
                     </div>
                     <div className="map">
