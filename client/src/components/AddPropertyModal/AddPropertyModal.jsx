@@ -1,16 +1,20 @@
 import React, { useState } from 'react'
-import { Container, Modal, Stepper } from '@mantine/core'
+import { Modal, Stepper } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 
 import AddLocation from '../AddLocation/AddLocation';
 import UploadImage from '../UploadImage/UploadImage';
 import BasicDetails from '../BasicDetails/BasicDetails';
 import Facilities from '../Facilities/Facilities';
 
+import './AddPropertyModal.css'
+
 const AddPropertyModal = ({ opened, setOpened }) => {
 
     const [active, setActive] = useState(0);
     const nextStep = () => setActive((current) => (current < 4 ? current + 1 : current));
     const prevStep = () => setActive((current) => (current > 0 ? current - 1 : current));
+    const isPhone = useMediaQuery('(max-width: 36em)')
 
     const [propertyDetails, setPropertyDetails] = useState({
         title: "",
@@ -31,24 +35,31 @@ const AddPropertyModal = ({ opened, setOpened }) => {
         <Modal
             opened={opened}
             onClose={() => setOpened(false)}
-            size={"90rem"}
+            title={<span className="apm-title">Add a property</span>}
+            size="56rem"
+            radius="md"
+            centered={!isPhone}
+            fullScreen={isPhone}
+            padding={isPhone ? "md" : "xl"}
         >
-            <Container h={"40rem"} w={"100%"} >
+            <div className="apm-body">
 
-                <Stepper 
+                <Stepper
+                    className="apm-stepper"
                     active={active}
                     onStepClick={setActive}
-                    breakpoint="sm"
+                    breakpoint={0}
+                    size="sm"
                     allowNextStepsSelect={false}
                 >
-                    <Stepper.Step label="Location" description="Address of Your Property">
+                    <Stepper.Step label="Location" description="Where it is">
                         <AddLocation
                             nextStep={nextStep}
                             propertyDetails={propertyDetails}
                             setPropertyDetails={setPropertyDetails}
                         />
                     </Stepper.Step>
-                    <Stepper.Step label="Cover Photo" description="Upload an Image">
+                    <Stepper.Step label="Cover photo" description="Main image">
                         <UploadImage
                             prevStep={prevStep}
                             nextStep={nextStep}
@@ -56,15 +67,15 @@ const AddPropertyModal = ({ opened, setOpened }) => {
                             setPropertyDetails={setPropertyDetails}
                         />
                     </Stepper.Step>
-                    <Stepper.Step label="Basic Details" description="About Your Residence">
-                        <BasicDetails 
+                    <Stepper.Step label="Details" description="Title and price">
+                        <BasicDetails
                             prevStep={prevStep}
                             nextStep={nextStep}
                             propertyDetails={propertyDetails}
                             setPropertyDetails={setPropertyDetails}
                         />
                     </Stepper.Step>
-                    <Stepper.Step label="Rooms" description="Insider Details">
+                    <Stepper.Step label="Rooms" description="Beds and baths">
                         <Facilities
                             prevStep={prevStep}
                             propertyDetails={propertyDetails}
@@ -74,11 +85,11 @@ const AddPropertyModal = ({ opened, setOpened }) => {
                         />
                     </Stepper.Step>
                     <Stepper.Completed>
-                        Completed, click back button to get to previous step
+                        <p className="apm-done">All steps are done. Use Back to review an earlier step.</p>
                     </Stepper.Completed>
                 </Stepper>
 
-            </Container>
+            </div>
         </Modal>
     )
 }

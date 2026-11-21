@@ -1,0 +1,146 @@
+.apm-body {
+    min-height: 26rem;
+}
+
+.apm-stepper {
+    margin-bottom: 1.75rem;
+}
+
+.apm-stepper .mantine-Stepper-stepLabel {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.apm-stepper .mantine-Stepper-stepDescription {
+    color: var(--muted);
+}
+
+.apm-title {
+    color: var(--primary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.apm-head {
+    margin-bottom: 1.25rem;
+}
+
+.apm-heading {
+    color: var(--primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.apm-help {
+    margin-top: 0.25rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.apm-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+}
+
+.apm-location {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: 2rem;
+    align-items: start;
+}
+
+.apm-map {
+    height: 20rem;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.apm-narrow {
+    max-width: 36rem;
+}
+
+.apm-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.apm-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--line);
+}
+
+.apm-actions .mantine-Button-root {
+    min-width: 7rem;
+}
+
+.apm-actions .apm-next {
+    margin-left: auto;
+    background: var(--blue-gradient);
+    border: none;
+}
+
+.apm-actions .apm-next:hover:not(:disabled) {
+    filter: brightness(1.08);
+}
+
+.apm-actions .apm-next:disabled,
+.apm-actions .apm-next[data-disabled] {
+    opacity: 0.5;
+    color: white;
+}
+
+.apm-done {
+    color: var(--muted);
+    padding: 2rem 0;
+    text-align: center;
+}
+
+@media (max-width: 48em) {
+    .apm-body {
+        min-height: 0;
+    }
+
+    .apm-location {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1.25rem;
+    }
+
+    .apm-map {
+        height: 14rem;
+    }
+}
+
+@media (max-width: 36em) {
+    .apm-stepper .mantine-Stepper-stepBody {
+        display: none;
+    }
+
+    .apm-stepper .mantine-Stepper-separator {
+        margin-inline: 0.5rem;
+    }
+
+    .apm-grid-3 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .apm-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .apm-actions .apm-next {
+        margin-left: 0;
+    }
+}

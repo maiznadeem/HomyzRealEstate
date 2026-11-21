@@ -3,14 +3,14 @@ import { MapContainer, TileLayer } from 'react-leaflet'
 
 import GeoCoderMarker from '../GeoCoderMarker/GeoCoderMarker'
 
-const Map = ({ address, city, country }) => {
+const Map = ({ address, city, country, height = "min(26rem, 50vh)" }) => {
     return (
         <MapContainer
             center={[53.35, 18.8]}
             zoom={1}
             scrollWheelZoom={false}
             style={{
-                height: "min(26rem, 50vh)",
+                height,
                 width: "100%",
                 zIndex: 0,
             }}

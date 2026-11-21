@@ -1,9 +1,11 @@
 import React from 'react'
-import { Box, Button, Group, NumberInput } from '@mantine/core';
+import { NumberInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 
+import StepHeader from '../AddPropertyModal/StepHeader';
+import StepActions from '../AddPropertyModal/StepActions';
 import { createResidency, errorMessage } from '../../utils/api';
 import useProperties from '../../hooks/useProperties'
 
@@ -16,11 +18,11 @@ const Facilities = ({ prevStep, propertyDetails, setPropertyDetails, setOpened, 
             bathrooms: propertyDetails.facilities.bathrooms,
         },
         validate: {
-            bedrooms: value => value < 1 ? "Must have atleast one room" : null,
-            bathrooms: value => value < 1 ? "Must have atleast one bathroom" : null,
+            bedrooms: value => value < 1 ? "Must have at least one room" : null,
+            bathrooms: value => value < 1 ? "Must have at least one bathroom" : null,
         },
     });
-    
+
     const { bedrooms, parkings, bathrooms } = form.values;
 
     const handleSubmit = () => {
@@ -64,36 +66,43 @@ const Facilities = ({ prevStep, propertyDetails, setPropertyDetails, setOpened, 
     })
 
     return (
-        <Box maw="30%" mx="auto" my="sm">
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    handleSubmit();
-                }}
-            >
+        <form
+            className="apm-narrow"
+            onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit();
+            }}
+        >
+            <StepHeader title="Rooms and parking" help="Enter whole numbers. You need at least one bedroom and one bathroom." />
+            <div className="apm-grid-3">
                 <NumberInput
                     withAsterisk
-                    label="No of Bedrooms"
+                    label="Bedrooms"
                     min={0}
+                    max={50}
                     {...form.getInputProps("bedrooms")}
                 />
                 <NumberInput
-                    label="No of Parkings"
-                    min={0}
-                    {...form.getInputProps("parkings")}
-                />
-                <NumberInput
                     withAsterisk
-                    label="No of Bathrooms"
+                    label="Bathrooms"
                     min={0}
+                    max={50}
                     {...form.getInputProps("bathrooms")}
                 />
-                <Group position="center" mt="xl">
-                    <Button variant="default" onClick={prevStep}>Back</Button>
-                    <Button type="submit" color="green" disabled={isLoading}>{isLoading ? "Submitting" : "Add Property"}</Button>
-                </Group>
-            </form>
-        </Box>
+                <NumberInput
+                    label="Parking spaces"
+                    min={0}
+                    max={50}
+                    {...form.getInputProps("parkings")}
+                />
+            </div>
+            <StepActions
+                onBack={prevStep}
+                nextType="submit"
+                nextLabel={isLoading ? "Adding" : "Add property"}
+                nextDisabled={isLoading}
+            />
+        </form>
     )
 }
 

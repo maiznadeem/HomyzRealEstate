@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Swiper, SwiperSlide, useSwiper } from 'swiper/react'
 import { FaArrowRight, FaArrowLeft } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 import 'swiper/css'
 import './Residencies.css'

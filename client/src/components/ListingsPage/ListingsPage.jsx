@@ -1,6 +1,6 @@
 import React, { useContext, useMemo } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router'
 import { PuffLoader } from 'react-spinners'
 import { MdOutlineSearchOff, MdOutlineErrorOutline, MdLockOutline } from 'react-icons/md'
 
