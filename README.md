@@ -59,7 +59,7 @@ CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 ```
 
-   `CORS_ORIGINS` lists the sites allowed to call the API (default: the deployed site only). The Cloudinary key signs image uploads; without it, property image uploads are disabled. Optional overrides: `CLOUDINARY_CLOUD_NAME` (default `dwujonydh`), `AUTH0_ISSUER_BASE_URL` (default `https://dev-ccw5bra5gc5nxss7.us.auth0.com`) and `AUTH0_AUDIENCE` (default `https://homyz-real-estate-backend.vercel.app/`).
+   `CORS_ORIGINS` lists the sites allowed to call the API (default: the deployed site only). The Cloudinary key signs image uploads; without it, property image uploads are disabled. Optional overrides: `CLOUDINARY_CLOUD_NAME` (default `dwujonydh`), `AUTH0_ISSUER_BASE_URL` (default `https://homyz-real-estate.us.auth0.com`) and `AUTH0_AUDIENCE` (default `https://homyz-real-estate-backend.vercel.app/`).
 
 3. Create `client/.env.local` to point the client at your local server:
 
@@ -82,7 +82,7 @@ cd client && npm run dev
 
 ### Auth0 setup
 
-The client logs in with the Auth0 SPA application and requests an access token for the **Homyz Real Estate** API (`https://homyz-real-estate-backend.vercel.app/`). A post-login Action, *Homyz Real Estate - email claim*, adds the user's verified email to that token as `https://homyz-real-estate/email`, and the server uses that claim, never an email sent in the request, to decide whose favourites and bookings to read or change. If you use your own tenant:
+The client logs in with the Auth0 SPA application and requests an access token for the **Homyz Real Estate** API (`https://homyz-real-estate-backend.vercel.app/`). A post-login Action, *Homyz Real Estate - email claim*, adds the user's verified email to that token as `https://homyz-real-estate/email`, and the server uses that claim, never an email sent in the request, to decide whose favourites and bookings to read or change. A second post-login Action, *Homyz Real Estate - link accounts by email*, runs first and keeps one account per person: when someone logs in with a verified email that another verified account already uses (for example Google and then email + password), it links the two into the oldest account. The site's tenant is `homyz-real-estate.us.auth0.com`. If you use your own tenant:
 
 - Add `http://localhost:3000` and your deployed URL to the application's Allowed Callback URLs, Allowed Logout URLs and Allowed Web Origins.
 - Create an API, enable **Allow Offline Access** (the client uses refresh tokens), and use its identifier as the audience.
