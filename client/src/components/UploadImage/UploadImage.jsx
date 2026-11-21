@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { AiOutlineCloudUpload } from 'react-icons/ai'
-import { Button, Group } from '@mantine/core'
+import { Button } from '@mantine/core'
 import { toast } from 'react-toastify'
 
+import StepHeader from '../AddPropertyModal/StepHeader'
+import StepActions from '../AddPropertyModal/StepActions'
 import config from '../../../config'
 import { errorMessage, signUpload } from '../../utils/api'
 
@@ -54,29 +56,27 @@ const UploadImage = ({ propertyDetails, setPropertyDetails, nextStep, prevStep }
     }, [])
 
     return (
-        <div className="flexColCenter uploadWrapper">
+        <div>
+            <StepHeader title="Add a cover photo" help="This is the main image people see. Use a JPG, PNG or WebP file up to 5 MB." />
             {
                 !imageURL ? (
-                    <div 
-                        className="flexColCenter uploadZone"
-                        onClick={openWidget}
-                    >
-                        <AiOutlineCloudUpload size={50} color='grey' />
-                        <span>Upload Image</span>
-                    </div>
+                    <button type="button" className="upload-zone" onClick={openWidget}>
+                        <AiOutlineCloudUpload size={44} className="upload-zone-icon" />
+                        <span className="upload-zone-title">Upload a photo</span>
+                        <span className="upload-zone-hint">Choose a file or take a picture</span>
+                    </button>
                 ) : (
-                    <div 
-                        className="uploadedImage"
-                        onClick={openWidget}
-                    >
-                        <img src={imageURL} alt="House Image" />
+                    <div className="upload-preview">
+                        <img src={imageURL} alt="Cover of the property" />
                     </div>
                 )
             }
-            <Group position="center" mt="xl">
-                <Button variant='default' onClick={prevStep}>Back</Button>
-                <Button onClick={handleNext} disabled={!imageURL}>Next</Button>
-            </Group>
+            <StepActions
+                onBack={prevStep}
+                onNext={handleNext}
+                nextDisabled={!imageURL}
+                extra={imageURL ? <Button variant="subtle" onClick={openWidget}>Replace photo</Button> : null}
+            />
         </div>
     )
 }

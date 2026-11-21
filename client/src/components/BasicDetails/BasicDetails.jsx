@@ -1,7 +1,9 @@
 import React from "react";
-import { TextInput, Box, Textarea, Group, Button, NumberInput } from "@mantine/core";
+import { TextInput, Textarea, NumberInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 
+import StepHeader from "../AddPropertyModal/StepHeader";
+import StepActions from "../AddPropertyModal/StepActions";
 import { validateString } from "../../utils/common";
 
 const BasicDetails = ({ prevStep, nextStep, propertyDetails, setPropertyDetails }) => {
@@ -16,7 +18,7 @@ const BasicDetails = ({ prevStep, nextStep, propertyDetails, setPropertyDetails 
             title: (value) => validateString(value),
             description: (value) => validateString(value),
             price: (value) =>
-                value < 1000 ? "Must be greater than 999 dollars" : null,
+                value < 1000 ? "Must be at least 1,000" : null,
         }
     });
 
@@ -31,36 +33,43 @@ const BasicDetails = ({ prevStep, nextStep, propertyDetails, setPropertyDetails 
     }
 
     return (
-        <Box maw="50%" mx="auto" my="md">
-            <form  onSubmit={(e) => {
+        <form
+            className="apm-narrow"
+            onSubmit={(e) => {
                 e.preventDefault();
                 handleSubmit();
-                }}>
+            }}
+        >
+            <StepHeader title="Describe the property" help="A clear title and a few details help buyers find it." />
+            <div className="apm-fields">
                 <TextInput
                     withAsterisk
                     label="Title"
-                    placeholder="Property Name"
+                    placeholder="For example, Sunny family home"
+                    maxLength={100}
                     { ...form.getInputProps("title") }
                 />
                 <Textarea
-                    placeholder="Description"
-                    label="Description"
                     withAsterisk
+                    label="Description"
+                    placeholder="What makes this property special?"
+                    minRows={4}
+                    autosize
+                    maxLength={2000}
                     { ...form.getInputProps("description") }
                 />
                 <NumberInput
                     withAsterisk
-                    label="Price"
-                    placeholder="1000"
+                    label="Price (USD)"
+                    description="Minimum 1,000"
+                    placeholder="250000"
                     min={0}
+                    max={1000000000}
                     { ...form.getInputProps("price") }
                 />
-                <Group position="center" mt="xl">
-                    <Button variant="default" onClick={prevStep}>Back</Button>
-                    <Button type="submit">Next step</Button>
-                </Group>
-            </form>
-        </Box>
+            </div>
+            <StepActions onBack={prevStep} nextType="submit" />
+        </form>
     );
 };
 

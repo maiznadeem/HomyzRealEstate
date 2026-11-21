@@ -1,7 +1,7 @@
 import React from 'react'
 import { FaEnvelope } from 'react-icons/fa'
 import { MdOutlineHomeWork } from 'react-icons/md'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 import './Contact.css'
 

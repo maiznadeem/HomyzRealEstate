@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react'
 import { useMutation, useQuery } from 'react-query'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router'
 import { FaShower } from 'react-icons/fa'
 import { MdMeetingRoom, MdLocationPin, MdOutlineHomeWork, MdArrowBack } from 'react-icons/md'
 import { AiTwotoneCar } from 'react-icons/ai'

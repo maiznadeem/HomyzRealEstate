@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { BiMenuAltRight, BiX } from 'react-icons/bi'
 import OutsideClickHandler from 'react-outside-click-handler'
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router'
 import { useAuth0 } from '@auth0/auth0-react'
 
 import ProfileMenu from '../ProfileMenu/ProfileMenu'

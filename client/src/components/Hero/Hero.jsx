@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import CountUp from 'react-countup'
 import { motion, useReducedMotion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import SearchBar from '../SearchBar/SearchBar'
 import useProperties from '../../hooks/useProperties'
