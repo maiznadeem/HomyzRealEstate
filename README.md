@@ -1,6 +1,6 @@
-[![Homyz Banner](https://raw.githubusercontent.com/MaizNadeem/Real-Estate-Web/main/client/src/assets/Banner.png)](https://homyz-real-estate.vercel.app/)
+[![Homyz Banner](https://raw.githubusercontent.com/maiznadeem/HomyzRealEstate/main/client/src/assets/Banner.png)](https://homyz-real-estate.vercel.app/)
 
-# Homyz - A Real Estate Website
+# Homyz Real Estate
 
 Introducing Homyz - the ultimate real estate platform! Buy or sell properties hassle-free with its user-friendly interface. List your property effortlessly, and explore countless options with a dynamic interactive map. Like your favourite residencies and secure your account with Auth0. Sleek UI powered by Mantine for a seamless experience. Get ready for the real estate adventure of a lifetime!
 
@@ -22,8 +22,9 @@ Homyz Real Estate is now live on Vercel! Explore the website here: [**Homyz Real
 ![Javascript](https://img.shields.io/badge/JavaScript-323330?style=for-the-badge&logo=javascript&logoColor=F7DF1E)
 ![NodeJS](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge)
-![React Native](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![React Router](https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=react-router&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
 ![JWT](https://img.shields.io/badge/json%20web%20tokens-323330?style=for-the-badge&logo=json-web-tokens&logoColor=pink)
 ![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
@@ -39,60 +40,52 @@ Homyz Real Estate is now live on Vercel! Explore the website here: [**Homyz Real
 
 ## Run on Local Machine
 
-To run this project on your local computer, follow these steps:
-
-1. Clone this repository to your local machine:
+1. Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/MaizNadeem/Real-Estate-Web.git
+git clone https://github.com/maiznadeem/HomyzRealEstate.git
+cd HomyzRealEstate
+cd client && npm install
+cd ../server && npm install
 ```
 
-2. Navigate to the project directory:
+2. Create `server/.env`:
+
+```
+PORT=8000
+DATABASE_URL=your_mongodb_url_here
+```
+
+   Optional overrides: `AUTH0_ISSUER_BASE_URL` (default `https://dev-ccw5bra5gc5nxss7.us.auth0.com`) and `AUTH0_AUDIENCE` (default `https://homyz-real-estate-backend.vercel.app/`).
+
+3. Create `client/.env.local` to point the client at your local server:
+
+```
+VITE_API_BASE_URL=http://localhost:8000/api
+```
+
+   `VITE_AUTH0_DOMAIN`, `VITE_AUTH0_CLIENT_ID` and `VITE_AUTH0_AUDIENCE` override the defaults in `client/config.js` if you use your own Auth0 tenant.
+
+4. Start both apps:
 
 ```bash
-cd Real-Estate-Web
+cd server && npm run dev
+cd client && npm run dev
 ```
 
-3. Install the required dependencies for both the client and server sides:
+5. Open `http://localhost:3000`. The API runs on `http://localhost:8000`.
 
-```bash
-cd client
-npm install
-cd ../server
-npm install
-```
+### Auth0 setup
 
-4. Auth0 Configuration Changes:
-   - In the server directory, go to `./config/auth0Config.js` and update the `issuerBaseURL` with the correct Auth0 issuer URL from your own App.
+The client logs in with the Auth0 SPA application and requests an access token for the **Homyz Real Estate** API (`https://homyz-real-estate-backend.vercel.app/`). A post-login Action, *Homyz Real Estate - email claim*, adds the user's verified email to that token as `https://homyz-real-estate/email`, and the server uses that claim, never an email sent in the request, to decide whose favourites and bookings to read or change. If you use your own tenant:
 
-5. MongoDB Configuration Changes:
-   - In the server directory, create a `.env` file and set the following variables with your own MongoDB and Auth0 credentials:
-     ```
-     PORT=8000
-     DATABASE_URL=your_mongodb_url_here
-     ISSUER_BASE_URL=your_auth0_issuer_url_here
-     ```
+- Add `http://localhost:3000` and your deployed URL to the application's Allowed Callback URLs, Allowed Logout URLs and Allowed Web Origins.
+- Create an API, enable **Allow Offline Access** (the client uses refresh tokens), and use its identifier as the audience.
+- Create the post-login Action that sets the `https://homyz-real-estate/email` claim for verified emails.
 
-6. Auth0 Configuration Changes on client side:
-   - In the client directory, go to `./config.js` and replace the `domain`, `clientID` with your own Auth0 app configuration.
+### Database
 
-7. Update API URL:
-   - In the client directory, go to `./src/utils/api.js` and update the `baseURL` to your own server URL or `http://localhost:8000/api`.
-
-8. Start the development servers for both the client and server sides:
-
-```bash
-cd client
-npm run dev
-```
-```bash
-cd ../server
-npm start
-```
-
-9. Open your web browser and visit `http://localhost:3000` to access the Homyz website. Additionally, you can access the server at `http://localhost:8000`.
-
-Now you can explore the Homyz Real Estate website locally and make any necessary changes to suit your requirements. If you have any questions or face any issues during the setup process, don't hesitate to seek assistance. Happy coding!
+The server uses Prisma with MongoDB Atlas on the free M0 tier. Atlas pauses free clusters after long inactivity; if the site shows "Something went wrong" while loading properties, resume the cluster in Atlas.
 
 **Contributing**
 
@@ -108,4 +101,4 @@ If you encounter any issues while using the Homyz website or have any suggestion
 
 Maiz - contact.maiznadeem@gmail.com
 
-Project Link: [View Github](https://github.com/MaizNadeem/Real-Estate-Web)
+Project Link: [View Github](https://github.com/maiznadeem/HomyzRealEstate)

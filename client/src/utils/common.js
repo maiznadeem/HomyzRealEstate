@@ -18,15 +18,14 @@ export const sliderSettings = {
 }
 
 export const updateFavourites = (id, favourites) => {
-    console.log(favourites)
-    if (favourites.includes(id))
+    if (favourites?.includes(id))
         return favourites.filter(resID => resID !== id)
     else
-        return [...favourites, id]
+        return [...(favourites ?? []), id]
 }
 
 export const checkFavourites = (id, favourites) => {
-    return favourites?.includes(id) ? "FA3E5F" : "white"
+    return favourites?.includes(id) ? "#FA3E5F" : "white"
 }
 
 export const validateString = (value) => {
