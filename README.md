@@ -6,13 +6,118 @@ Introducing Homyz - the ultimate real estate platform! Buy or sell properties ha
 
 ## Deployment
 
-Homyz Real Estate is live at [**homyz.himaiz.com**](https://homyz.himaiz.com/).
+Homyz Real Estate is live at [**homyz.himaiz.com**](https://homyz.himaiz.com/). This section describes the live setup as of 2026-11-22. The `himaiz.com` Cloudflare zone shared by all of the owner's projects is recorded separately, in the private repo `maiznadeem/OracleVMOps` (`cloudflare/README.md`).
 
-- **Web:** the Vite build is served by the Cloudflare Worker `homyz-web` (Workers static assets, `client/wrangler.toml`, security headers in `client/public/_headers`).
-- **API:** `api.homyz.himaiz.com` is the Cloudflare Worker `homyz-api-edge` (`edge/api/`), which forwards to the Vercel project `homyz-real-estate-backend`. It adds a shared secret (`X-Origin-Auth`) and the visitor's address (`X-Client-IP`). With `ORIGIN_AUTH` set and `ORIGIN_AUTH_MODE=enforce`, the API refuses requests that skip Cloudflare (403), except Vercel's own cron call to `/api/keepalive`. The rate limiter trusts `X-Client-IP` only when the secret matches.
-- Both hostnames sit behind the `himaiz.com` zone's Cloudflare WAF.
-- **Deploys are automatic on push to `main`:** Cloudflare Workers Builds deploys `homyz-web` when `client/` changes (`npm run build`, then `npx wrangler deploy`) and `homyz-api-edge` when `edge/api/` changes. Vercel deploys the backend. Pull requests get no Cloudflare preview builds. `npm run deploy` in `client/` (with `CLOUDFLARE_API_TOKEN`) remains as a manual fallback.
-- The old Vercel web project (`homyz-real-estate.vercel.app`) was deleted on 2026-11-22; only the backend project remains on Vercel.
+### Hosting and domains
+
+| Hostname | Served by | Behind it |
+|---|---|---|
+| `homyz.himaiz.com` | Cloudflare Worker `homyz-web`: Workers static assets from `client/dist`, single-page-app fallback, headers in `client/public/_headers` (`client/wrangler.toml`) | nothing (no origin server) |
+| `api.homyz.himaiz.com` | Cloudflare Worker `homyz-api-edge` (`edge/api/`), which forwards every request | Vercel project `homyz-real-estate-backend` (`server/`): Express 5 on Node 22.x serverless functions in region `iad1` (Washington, D.C.), at `homyz-real-estate-backend.vercel.app` |
+
+- **Data:** MongoDB Atlas, free M0 cluster on GCP `asia-south1` (Mumbai), reached through Prisma.
+- **Images:** Cloudinary (cloud `dwujonydh`). Browsers upload straight to Cloudinary; the API only signs uploads.
+- **Sign-in:** Auth0 tenant `homyz-real-estate.us.auth0.com`, using Auth0's hosted login page.
+- **Retired:** the old Vercel web project (`homyz-real-estate.vercel.app`) was deleted on 2026-11-22. Only the backend project is left on Vercel.
+
+### CI
+
+- **No GitHub Actions workflows.** Pull requests get three checks from GitHub apps:
+  - GitGuardian scans for leaked secrets.
+  - Vercel builds a preview of the backend.
+  - Vercel Preview Comments.
+- **Workers Builds** posts one check per Worker on pushes to `main`. Preview builds are off, so pull requests get no Cloudflare checks.
+- **No automated tests.** Prove changes locally before pushing: `npm run build` in `client/`, and start the server.
+- `main` has no branch protection.
+
+### CD
+
+Every part deploys on its own when `main` changes:
+
+| Part | Deployed by | Settings |
+|---|---|---|
+| Site (`homyz-web`) | Cloudflare Workers Builds | branch `main`, root `/client`, build `npm run build`, deploy `npx wrangler deploy`, watch path `client/*`, previews off, **no build variables** |
+| API Worker (`homyz-api-edge`) | Cloudflare Workers Builds | branch `main`, root `/edge/api`, no build command, deploy `npx wrangler deploy`, watch path `edge/api/*`, previews off, **no build variables** |
+| Backend (`homyz-real-estate-backend`) | Vercel's GitHub integration | root `server/`. `main` deploys to production; other branches get a preview. Vercel currently builds the backend on every push, including ones that only touch `client/`, `edge/` or docs. |
+
+- **Why the site needs no build variables:** the site's public settings (Auth0 domain, client ID and audience, API URL, Cloudinary cloud and key) have production defaults in `client/config.js`. The `VITE_*` overrides are only for local development.
+- **Manual fallback:** with `CLOUDFLARE_API_TOKEN` set, run `npm run deploy` in `client/` or `npx wrangler@4 deploy` in `edge/api/`.
+
+**Keep-alive cron:** `server/vercel.json` schedules `GET /api/keepalive` at `0 6 * * *`. On Vercel Hobby the run lands at some point between 06:00 and 06:59 UTC. It runs one small query so Atlas doesn't pause the free cluster.
+
+- **How it passes the origin lock:** Vercel calls the production deployment directly, not through Cloudflare, so the request has no `X-Origin-Auth`. The origin-lock middleware exempts this one path. The handler then requires `Authorization: Bearer <CRON_SECRET>`, compared in constant time, and otherwise returns 401.
+- **To run it on demand:** `vercel crons run /api/keepalive -p homyz-real-estate-backend`.
+- **To read the result:** `vercel logs requests -p homyz-real-estate-backend --since 10m --query "requestPath:/api/keepalive"`.
+
+### Rollback
+
+- **Site or API Worker:** in the Cloudflare dashboard, open the Worker, then **Deployments**, and roll back to an earlier version. Or run `npx wrangler@4 rollback [version-id]` from the Worker's folder. Also revert the commit, or the next push to that path deploys it again.
+- **Backend:** in Vercel, use **Instant Rollback**. On Hobby it only goes back to the previous production deployment, so for anything older, revert the commit on `main`. A rollback also restores that deployment's cron definition and its copy of `CRON_SECRET`.
+- **Database:** Atlas M0 has no backups. Take a `mongodump` before risky data changes.
+- **Auth0 and Cloudflare zone settings:** these aren't in this repo. Revert them by hand.
+
+### Cloudflare
+
+- **Shared WAF:** both hostnames sit in the shared `himaiz.com` zone, behind its WAF:
+  - the Cloudflare Free Managed Ruleset
+  - custom rules that block scanner paths (such as `/.env`) and unused HTTP methods
+  - SSL Full (strict), minimum TLS 1.2, Always Use HTTPS
+
+  These zone rules serve every project on the zone and are managed centrally (see the `OracleVMOps` record above). Don't change them from this project.
+- **`api.homyz.himaiz.com` is a machine host.** The zone's rule for API hosts skips Browser Integrity Check and Security Level challenges, so API calls are never challenged.
+- **Origin lock for the API ("Pattern A"):** the API only answers requests that came through Cloudflare.
+  - **The Worker** (`edge/api/index.js`) removes any copies of its headers that the visitor sent, then sets:
+    - `X-Origin-Auth`: the Worker secret `ORIGIN_AUTH`
+    - `X-Client-IP`: from `CF-Connecting-IP`
+    - `X-Forwarded-Host` and `X-Forwarded-Proto`
+
+    It builds the target from its `ORIGIN` variable, copying only the path and query, so a request can't redirect it to another host.
+  - **The middleware** `server/middleware/originAuth.js` runs first in the chain and compares `X-Origin-Auth` with `ORIGIN_AUTH` in constant time:
+    - With `ORIGIN_AUTH_MODE=enforce`, which is set in production, every other request gets 403. The one exception is `/api/keepalive` (see CD).
+    - Any other mode only logs.
+    - Without `ORIGIN_AUTH` the check is off, as in local development and previews.
+  - **The rate limiter** trusts `X-Client-IP` only when the secret matches.
+- **The site ("Pattern B"):** static assets on Workers, so there's no origin server to bypass. `workers_dev` and `preview_urls` are off. No Worker script runs for the site, so its traffic doesn't count against the account's daily Worker request quota. API requests do count.
+- **Vercel's side:** no Vercel Firewall rules. Deployment Protection (Vercel Authentication) is on for previews, so preview URLs ask for a Vercel login.
+
+### Secrets
+
+Names only; the values never go in the repo.
+
+| Name | Where it lives | Used for |
+|---|---|---|
+| `ORIGIN_AUTH` | Vercel production (Sensitive), and a Worker secret on `homyz-api-edge` | origin lock |
+| `ORIGIN_AUTH_MODE` | Vercel production (Sensitive) | origin lock mode (`enforce`) |
+| `DATABASE_URL` | Vercel production and preview (Sensitive) | MongoDB connection, as user `homyz-app` |
+| `CRON_SECRET` | Vercel production and preview (Sensitive) | keep-alive cron |
+| `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Vercel production and preview (Sensitive) | signing image uploads |
+| `DOMAIN`, `CLIENT_ID`, `CLIENT_SECRET` | Auth0 Action secrets on *Homyz Real Estate - link accounts by email* | the Action's machine-to-machine app (read and update users) |
+
+- **Not secrets:** `CLOUDINARY_CLOUD_NAME` and `PORT` on Vercel.
+- **Public by design:** the Auth0 and Cloudinary identifiers in `client/config.js`.
+- **Cloudflare deploys:** Workers Builds uses the account's shared build token. There are no GitHub Actions secrets.
+
+### Auth0
+
+- **Tenant:** `homyz-real-estate.us.auth0.com`, single-page application "Homyz".
+- **Allowed Callback URLs:** `https://homyz.himaiz.com` and `https://homyz.himaiz.com/`.
+- **Allowed Logout URLs, Allowed Web Origins and Allowed Origins (CORS):** only `https://homyz.himaiz.com`.
+- **Never add `localhost`;** see Run on Local Machine.
+- **Logos:** the login page and the app logo load from `homyz.himaiz.com` (`/logo2.png`, `/Homyz%20Logo.png`).
+- **API audience:** `https://homyz-real-estate-backend.vercel.app/`. It is only an identifier and doesn't change with the API's hostname.
+
+### Bot protection
+
+- **No Cloudflare bot product is used.** The zone's Bot Fight Mode is off on purpose: the Free plan can't exempt API clients from it. Turnstile isn't needed, because Homyz has no anonymous forms of its own. Contact is a `mailto:` link, and every write needs a login.
+- **Sign-up and login** happen on Auth0's hosted page, under Auth0 Attack Protection: bot detection when traffic looks risky, and sign-up throttling.
+- **The API** applies its own rate limits and per-account data caps (see Security and abuse limits).
+- **No zone rate-limit rule** covers Homyz, since it has no login endpoints of its own.
+
+### Data access
+
+- **The API's database user** is `homyz-app`, with `readWrite` on `Homyz-Database` only. That database holds the `Residency`, `User`, `RateLimit` (expires on its own) and `UploadNonce` collections.
+- **The cluster** also hosts other apps' databases, each with its own user. Its network access isn't IP-restricted, because Vercel Hobby has no fixed outbound addresses. Per-app credentials and TLS protect it.
+- **Images** live in Cloudinary's *Homyz Real Estate* folder, written only through the signed upload preset.
 
 ## Key Features
 
@@ -34,6 +139,7 @@ Homyz Real Estate is live at [**homyz.himaiz.com**](https://homyz.himaiz.com/).
 ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
 ![JWT](https://img.shields.io/badge/json%20web%20tokens-323330?style=for-the-badge&logo=json-web-tokens&logoColor=pink)
 ![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
 ![VS Code](https://img.shields.io/badge/Visual_Studio_Code-0078D4?style=for-the-badge&logo=visual%20studio%20code&logoColor=white)
 
 
