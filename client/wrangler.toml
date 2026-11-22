@@ -1,6 +1,6 @@
 # Static site on Cloudflare Workers (homyz.himaiz.com), behind the zone's WAF. No Worker script runs, so
 # requests don't count against the account's daily Worker quota.
-# Deploy from client/ with CLOUDFLARE_API_TOKEN set: npm run deploy
+# Deployed by Cloudflare Workers Builds on push to main when client/ changes (fallback: npm run deploy).
 name = "homyz-web"
 compatibility_date = "2026-11-01"
 account_id = "803b01a6e3e53ef41f175e2a54e51372"
