@@ -24,7 +24,7 @@ Homyz Real Estate is live at [**homyz.himaiz.com**](https://homyz.himaiz.com/). 
 
 - **No GitHub Actions workflows.** Pull requests get three checks from GitHub apps:
   - GitGuardian scans for leaked secrets.
-  - Vercel builds a preview of the backend.
+  - Vercel reports on the backend, but skips building pull-request previews (see CD).
   - Vercel Preview Comments.
 - **Workers Builds** posts one check per Worker on pushes to `main`. Preview builds are off, so pull requests get no Cloudflare checks.
 - **No automated tests.** Prove changes locally before pushing: `npm run build` in `client/`, and start the server.
@@ -38,10 +38,22 @@ Every part deploys on its own when `main` changes:
 |---|---|---|
 | Site (`homyz-web`) | Cloudflare Workers Builds | branch `main`, root `/client`, build `npm run build`, deploy `npx wrangler deploy`, watch path `client/*`, previews off, **no build variables** |
 | API Worker (`homyz-api-edge`) | Cloudflare Workers Builds | branch `main`, root `/edge/api`, no build command, deploy `npx wrangler deploy`, watch path `edge/api/*`, previews off, **no build variables** |
-| Backend (`homyz-real-estate-backend`) | Vercel's GitHub integration | root `server/`. `main` deploys to production; other branches get a preview. Vercel currently builds the backend on every push, including ones that only touch `client/`, `edge/` or docs. |
+| Backend (`homyz-real-estate-backend`) | Vercel's GitHub integration | root `server/`. Builds production only, and only when a push to `main` changes `server/`; previews are never built (see below). |
 
 - **Why the site needs no build variables:** the site's public settings (Auth0 domain, client ID and audience, API URL, Cloudinary cloud and key) have production defaults in `client/config.js`. The `VITE_*` overrides are only for local development.
 - **Manual fallback:** with `CLOUDFLARE_API_TOKEN` set, run `npm run deploy` in `client/` or `npx wrangler@4 deploy` in `edge/api/`.
+- **The backend's Ignored Build Step** is a Vercel project setting, so it isn't in this repo:
+
+  ```sh
+  if [ "$VERCEL_ENV" != "production" ]; then exit 0; fi; git diff --quiet HEAD^ HEAD -- .
+  ```
+
+  It runs in `server/`. Exit code 0 means skip:
+  - Preview builds are always skipped.
+  - A push to `main` builds only when `server/` changed.
+  - If the clone lacks the previous commit, `git diff` fails, and Vercel builds anyway.
+
+  After changing a backend environment variable, redeploy the current production deployment from the Vercel dashboard, unchecking **Use project's Ignore Build Step**. Otherwise the change waits for the next `server/` push.
 
 **Keep-alive cron:** `server/vercel.json` schedules `GET /api/keepalive` at `0 6 * * *`. On Vercel Hobby the run lands at some point between 06:00 and 06:59 UTC. It runs one small query so Atlas doesn't pause the free cluster.
 
@@ -75,10 +87,10 @@ Every part deploys on its own when `main` changes:
   - **The middleware** `server/middleware/originAuth.js` runs first in the chain and compares `X-Origin-Auth` with `ORIGIN_AUTH` in constant time:
     - With `ORIGIN_AUTH_MODE=enforce`, which is set in production, every other request gets 403. The one exception is `/api/keepalive` (see CD).
     - Any other mode only logs.
-    - Without `ORIGIN_AUTH` the check is off, as in local development and previews.
+    - Without `ORIGIN_AUTH` the check is off, as in local development.
   - **The rate limiter** trusts `X-Client-IP` only when the secret matches.
 - **The site ("Pattern B"):** static assets on Workers, so there's no origin server to bypass. `workers_dev` and `preview_urls` are off. No Worker script runs for the site, so its traffic doesn't count against the account's daily Worker request quota. API requests do count.
-- **Vercel's side:** no Vercel Firewall rules. Deployment Protection (Vercel Authentication) is on for previews, so preview URLs ask for a Vercel login.
+- **Vercel's side:** no Vercel Firewall rules. Preview builds are skipped (see CD). As a second guard, Deployment Protection (Vercel Authentication) stays on for previews, so any preview URL asks for a Vercel login.
 
 ### Secrets
 
@@ -88,8 +100,8 @@ Names only; the values never go in the repo.
 |---|---|---|
 | `ORIGIN_AUTH` | Vercel production (Sensitive), and a Worker secret on `homyz-api-edge` | origin lock |
 | `ORIGIN_AUTH_MODE` | Vercel production (Sensitive) | origin lock mode (`enforce`) |
-| `DATABASE_URL` | Vercel production and preview (Sensitive) | MongoDB connection, as user `homyz-app` |
-| `CRON_SECRET` | Vercel production and preview (Sensitive) | keep-alive cron |
+| `DATABASE_URL` | Vercel production only (Sensitive) | MongoDB connection, as user `homyz-app` |
+| `CRON_SECRET` | Vercel production only (Sensitive) | keep-alive cron |
 | `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Vercel production and preview (Sensitive) | signing image uploads |
 | `DOMAIN`, `CLIENT_ID`, `CLIENT_SECRET` | Auth0 Action secrets on *Homyz Real Estate - link accounts by email* | the Action's machine-to-machine app (read and update users) |
 
@@ -191,7 +203,7 @@ cd client && npm run dev
 
 5. Open `http://localhost:3000`. The API runs on `http://localhost:8000`.
 
-   Deployed environments allow only production origins. The site's Auth0 application and the API's CORS list contain only the production site, and Vercel preview deployments can't call the production API. Don't add `localhost` to the production Auth0 application. To log in locally, create a separate development application (or tenant) that allows `http://localhost:3000`, and point the `VITE_AUTH0_*` variables in `client/.env.local` at it. Browsing listings works locally without logging in.
+   Deployed environments allow only production origins. The site's Auth0 application and the API's CORS list contain only the production site, and the backend builds no Vercel previews. Don't add `localhost` to the production Auth0 application. To log in locally, create a separate development application (or tenant) that allows `http://localhost:3000`, and point the `VITE_AUTH0_*` variables in `client/.env.local` at it. Browsing listings works locally without logging in.
 
 ### Auth0 setup
 
