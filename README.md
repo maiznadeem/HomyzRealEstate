@@ -18,13 +18,11 @@ Homyz Real Estate is live at [**homyz.himaiz.com**](https://homyz.himaiz.com/). 
 - **Data:** MongoDB Atlas, free M0 cluster `maiz-portfolio` on GCP `us-central1` (Iowa), in the Atlas project *Maiz Portfolio US*, reached through Prisma. It moved from `asia-south1` (Mumbai) on 2026-11-22 so it sits in the same region as the API.
 - **Images:** Cloudinary (cloud `dwujonydh`). Browsers upload straight to Cloudinary; the API only signs uploads.
 - **Sign-in:** Auth0 tenant `homyz-real-estate.us.auth0.com`, using Auth0's hosted login page.
-- **Retired:** the Vercel web project (`homyz-real-estate.vercel.app`) was deleted on 2026-11-22. The API ran on the Vercel project `homyz-real-estate-backend` until it moved to Cloud Run on 2026-11-22; that project stays only briefly as a rollback, then it is deleted too.
+- **Retired on 2026-11-22:** both Vercel projects. The site moved to Cloudflare, and the API (`homyz-real-estate-backend`) moved to Cloud Run. The database moved from Atlas in Mumbai to Iowa, and the old cluster was deleted.
 
 ### CI
 
-- **No GitHub Actions workflows.** Pull requests get three checks from GitHub apps:
-  - GitGuardian scans for leaked secrets.
-  - Vercel, until the old backend project is deleted (see Hosting).
+- **No GitHub Actions workflows.** Pull requests get one check from a GitHub app: GitGuardian scans for leaked secrets.
 - **Workers Builds** posts one check per Worker on pushes to `main`. Preview builds are off, so pull requests get no Cloudflare checks.
 - **Cloud Build** builds the backend only on pushes to `main` (see CD); pull requests get no Google check.
 - **No automated tests.** Prove changes locally before pushing: `npm run build` in `client/`, and for the server, `docker build server` and run the image.
@@ -55,7 +53,6 @@ Every part deploys on its own when `main` changes:
 
 - **Site or API Worker:** in the Cloudflare dashboard, open the Worker, then **Deployments**, and roll back to an earlier version. Or run `npx wrangler@4 rollback [version-id]` from the Worker's folder. Also revert the commit, or the next push to that path deploys it again.
 - **Backend:** in the Cloud Run console, open `homyz-backend`, then **Revisions**, and send all traffic to an earlier revision. Or run `gcloud run services update-traffic homyz-backend --region us-central1 --project maiz-portfolio --to-revisions <revision>=100`. Also revert the commit, or the next push to `server/` deploys it again.
-- **Back to Vercel (only while that project still exists):** set `ORIGIN` in `edge/api/wrangler.toml` back to `https://homyz-real-estate-backend.vercel.app`. First point that project's `DATABASE_URL` at the Iowa cluster: it still holds the Mumbai URL, and the Mumbai copy stops receiving writes at the switch.
 - **Database:** Atlas M0 has no backups. Take a `mongodump` before risky data changes.
 - **Auth0 and Cloudflare zone settings:** these aren't in this repo. Revert them by hand.
 
@@ -92,7 +89,6 @@ Names only; the values never go in the repo.
 | `ORIGIN_AUTH` | Secret Manager `homyz-secrets`, and a Worker secret on `homyz-api-edge` | origin lock |
 | `DATABASE_URL` | Secret Manager `homyz-secrets` | MongoDB connection, as user `homyz-app` |
 | `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Secret Manager `homyz-secrets` | signing image uploads |
-| `CRON_SECRET` | Secret Manager `homyz-secrets` | Vercel's old keep-alive cron; removed with the Vercel project |
 | `DOMAIN`, `CLIENT_ID`, `CLIENT_SECRET` | Auth0 Action secrets on *Homyz Real Estate - link accounts by email* | the Action's machine-to-machine app (read and update users) |
 
 - **Not secrets:** `ORIGIN_AUTH_MODE`, `CLOUDINARY_CLOUD_NAME` and `NODE_ENV`, set on the Cloud Run service. Cloud Run sets `PORT`.
@@ -171,7 +167,6 @@ DATABASE_URL=your_mongodb_url_here
 CORS_ORIGINS=http://localhost:3000
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
-CRON_SECRET=a_long_random_string
 ```
 
    `CORS_ORIGINS` lists the sites allowed to call the API (default: the deployed site only). `ORIGIN_AUTH` and `ORIGIN_AUTH_MODE` are production-only (see Deployment); leave them unset locally. The Cloudinary key signs image uploads; without it, property image uploads are disabled. Optional overrides: `CLOUDINARY_CLOUD_NAME` (default `dwujonydh`), `AUTH0_ISSUER_BASE_URL` (default `https://homyz-real-estate.us.auth0.com`) and `AUTH0_AUDIENCE` (default `https://homyz-real-estate-backend.vercel.app/`).
