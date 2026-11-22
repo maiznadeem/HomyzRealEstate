@@ -55,6 +55,7 @@ Every part deploys on its own when `main` changes:
 
 - **Site or API Worker:** in the Cloudflare dashboard, open the Worker, then **Deployments**, and roll back to an earlier version. Or run `npx wrangler@4 rollback [version-id]` from the Worker's folder. Also revert the commit, or the next push to that path deploys it again.
 - **Backend:** in the Cloud Run console, open `homyz-backend`, then **Revisions**, and send all traffic to an earlier revision. Or run `gcloud run services update-traffic homyz-backend --region us-central1 --project maiz-portfolio --to-revisions <revision>=100`. Also revert the commit, or the next push to `server/` deploys it again.
+- **Back to Vercel (only while that project still exists):** set `ORIGIN` in `edge/api/wrangler.toml` back to `https://homyz-real-estate-backend.vercel.app`. First point that project's `DATABASE_URL` at the Iowa cluster: it still holds the Mumbai URL, and the Mumbai copy stops receiving writes at the switch.
 - **Database:** Atlas M0 has no backups. Take a `mongodump` before risky data changes.
 - **Auth0 and Cloudflare zone settings:** these aren't in this repo. Revert them by hand.
 
