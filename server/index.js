@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import './config/appSecrets.js'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
@@ -24,7 +25,8 @@ app.use(cors({ origin: CORS_ORIGINS, methods: ['GET', 'POST'], maxAge: 600 }))
 app.use(express.json({ limit: '20kb' }))
 
 app.get("/api/health", (req, res) => res.send({ ok: true }))
-// Daily Vercel cron (vercel.json) that touches the database so Atlas doesn't pause the free cluster.
+// Daily ping that touches the database so Atlas doesn't pause the free cluster. The edge Worker's cron calls it
+// (edge/api/wrangler.toml); Vercel's cron (vercel.json) still can while Vercel is the fallback.
 app.get("/api/keepalive", keepAlive)
 app.use("/api", apiLimiter)
 app.use("/api/user", userRoute)
@@ -42,6 +44,7 @@ app.use((err, req, res, next) => {
     })
 })
 
+// Vercel imports the app instead; everywhere else (Cloud Run, local) it listens on PORT.
 if (!process.env.VERCEL) {
     app.listen(PORT, () => console.log(`Server is running on port: ${PORT}`))
 }

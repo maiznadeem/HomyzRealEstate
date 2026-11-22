@@ -1,5 +1,6 @@
 # Deployed by Cloudflare Workers Builds on push to main when edge/api/ changes (fallback: npx wrangler@4 deploy).
-# The secret is set once with: npx wrangler@4 secret put ORIGIN_AUTH (same value as ORIGIN_AUTH in Vercel production)
+# The secret is set once with: npx wrangler@4 secret put ORIGIN_AUTH (same value as ORIGIN_AUTH in the API's
+# Secret Manager secret, homyz-secrets)
 name = "homyz-api-edge"
 main = "index.js"
 compatibility_date = "2026-11-01"
@@ -9,7 +10,12 @@ preview_urls = false
 routes = [{ pattern = "api.homyz.himaiz.com", custom_domain = true }]
 
 [vars]
-ORIGIN = "https://homyz-real-estate-backend.vercel.app"
+# The API on Cloud Run (service homyz-backend, us-central1).
+ORIGIN = "https://homyz-backend-913220110827.us-central1.run.app"
+
+# Daily keep-alive so Atlas doesn't pause the free cluster (see scheduled() in index.js).
+[triggers]
+crons = ["0 6 * * *"]
 
 [observability]
 enabled = true
