@@ -64,12 +64,8 @@ class MongoStore {
 }
 
 // Through Cloudflare, originAuth sets the visitor's address from the Worker (trusted only with the secret).
-// Otherwise Vercel overwrites X-Forwarded-For with the connecting address, so it can't be spoofed there.
-const clientIp = (req) => {
-    if (req.edgeClientIp) return ipKeyGenerator(req.edgeClientIp)
-    const forwarded = process.env.VERCEL && req.headers['x-forwarded-for']
-    return ipKeyGenerator(forwarded ? String(forwarded).split(',')[0].trim() : req.ip)
-}
+// Without it (local development) the limiter uses the connecting address.
+const clientIp = (req) => ipKeyGenerator(req.edgeClientIp || req.ip)
 
 const limiter = ({ name, windowMs, limit, byUser = false, message, skipFailedRequests = false, failOpen = false }) => rateLimit({
     windowMs,
