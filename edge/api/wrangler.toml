@@ -1,4 +1,4 @@
-# Deploy: from edge/api, with CLOUDFLARE_API_TOKEN set: npx wrangler@4 deploy
+# Deployed by Cloudflare Workers Builds on push to main when edge/api/ changes (fallback: npx wrangler@4 deploy).
 # The secret is set once with: npx wrangler@4 secret put ORIGIN_AUTH (same value as ORIGIN_AUTH in Vercel production)
 name = "homyz-api-edge"
 main = "index.js"
