@@ -16,9 +16,9 @@ const data = [
     },
     {
         icon: <MdOutlineEventAvailable />,
-        heading: "Book a visit online",
+        heading: "Book visits online",
         detail:
-            "Pick a date to book a viewing. Your visits are listed under Bookings, and you can cancel one from the listing at any time.",
+            "Pick a date on any listing to book a visit. Your visits are listed under Bookings, where you can cancel one at any time.",
     },
 ];
 

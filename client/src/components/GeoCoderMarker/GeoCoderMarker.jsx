@@ -13,26 +13,70 @@ let defaultIcon = L.icon({
 })
 L.Marker.prototype.options.icon = defaultIcon
 
+const STREET_ZOOM = 15
+
 const GeoCoderMarker = ({ address }) => {
-    
+
     const map = useMap()
-    const [position, setPosition] = useState([60, 19])
+    // null until geocoding finds a match; `failed` is true once a lookup came back empty or errored.
+    const [position, setPosition] = useState(null)
+    const [failed, setFailed] = useState(false)
 
     useEffect (() => {
-        if (!address) return
-        ELG.geocode().text(address).run((err, results) => {
-            const match = results?.results?.[0]?.latlng
-            if (!err && match) {
-                setPosition([match.lat, match.lng])
-                map.flyTo([match.lat, match.lng], 6)
-            }
-        })
+        if (!address) {
+            setPosition(null)
+            setFailed(false)
+            return
+        }
+        let cancelled = false
+        // Wait for typing to pause so the geocoder isn't called on every keystroke.
+        const timer = setTimeout(() => {
+            ELG.geocode().text(address).run((err, results) => {
+                if (cancelled) return
+                const match = results?.results?.[0]?.latlng
+                if (!err && match) {
+                    setPosition([match.lat, match.lng])
+                    setFailed(false)
+                    map.flyTo([match.lat, match.lng], STREET_ZOOM)
+                } else {
+                    setPosition(null)
+                    setFailed(true)
+                }
+            })
+        }, 500)
+        return () => {
+            cancelled = true
+            clearTimeout(timer)
+        }
     }, [address, map])
 
     return (
-        <Marker position={position} icon={defaultIcon} >
-            <Popup />
-        </Marker>
+        <>
+            {position && (
+                <Marker position={position} icon={defaultIcon} >
+                    <Popup>{address}</Popup>
+                </Marker>
+            )}
+            {failed && (
+                <div
+                    role="status"
+                    style={{
+                        position: "absolute",
+                        left: "0.5rem",
+                        bottom: "1.5rem",
+                        zIndex: 1000,
+                        padding: "0.25rem 0.6rem",
+                        borderRadius: 6,
+                        background: "rgba(255, 255, 255, 0.92)",
+                        color: "#1f3e72",
+                        fontSize: "0.8rem",
+                        pointerEvents: "none",
+                    }}
+                >
+                    Map location unavailable for this address
+                </div>
+            )}
+        </>
     )
 }
 

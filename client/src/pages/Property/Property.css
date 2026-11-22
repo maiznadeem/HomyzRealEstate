@@ -121,14 +121,11 @@
     color: var(--primary);
 }
 
-.button--outline-danger {
-    background: white;
-    color: #c92a2a;
-    border: 1px solid #f1b0b0;
-}
-
-.button--outline-danger:hover {
-    background: #fff5f5;
+/* Loading skeleton: same blocks as the page, so nothing jumps when the data arrives. */
+.property-skeleton-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
 }
 
 .property-map {

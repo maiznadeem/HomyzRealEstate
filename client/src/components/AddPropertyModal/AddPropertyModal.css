@@ -101,6 +101,13 @@
     color: white;
 }
 
+.apm-hint {
+    margin-top: 0.5rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-align: right;
+}
+
 .apm-done {
     color: var(--muted);
     padding: 2rem 0;
@@ -142,5 +149,9 @@
 
     .apm-actions .apm-next {
         margin-left: 0;
+    }
+
+    .apm-hint {
+        text-align: center;
     }
 }

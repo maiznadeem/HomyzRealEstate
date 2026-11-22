@@ -14,7 +14,7 @@ const Contact = () => (
                 <span className='orangeText'>Contact</span>
                 <h2 className='primaryText'>Questions about a home?</h2>
                 <p className='secondaryText c-intro'>
-                    Ask about a listing, a visit you’ve booked or putting your own home on Homyz. We reply by email.
+                    Have a question about a listing, a visit you’ve booked or putting your own home on Homyz? Send us an email.
                 </p>
                 <div className="contactModes">
                     <div className="mode">
@@ -22,7 +22,7 @@ const Contact = () => (
                             <div className="flexCenter icon" aria-hidden="true"><FaEnvelope size={22} /></div>
                             <div className="detail">
                                 <h3 className='primaryText'>Email</h3>
-                                <span className='secondaryText'>{CONTACT_EMAIL}</span>
+                                <span className='secondaryText mode-email'>{CONTACT_EMAIL.split('@')[0]}<wbr />@{CONTACT_EMAIL.split('@')[1]}</span>
                             </div>
                         </div>
                         <a className="flexCenter button" href={`mailto:${CONTACT_EMAIL}`}>Send an email</a>
@@ -32,7 +32,7 @@ const Contact = () => (
                             <div className="flexCenter icon" aria-hidden="true"><MdOutlineHomeWork size={22} /></div>
                             <div className="detail">
                                 <h3 className='primaryText'>Book a visit</h3>
-                                <span className='secondaryText'>Open any listing and pick a date</span>
+                                <span className='secondaryText'>Open any listing and pick a date. Your visits appear under Bookings.</span>
                             </div>
                         </div>
                         <Link className="flexCenter button" to="/properties">Browse properties</Link>

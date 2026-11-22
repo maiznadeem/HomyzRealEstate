@@ -26,7 +26,7 @@ const Value = () => {
                     <span className="orangeText">Why Homyz</span>
                     <h2 className="primaryText">Find, save and visit homes in one place</h2>
                     <p className="secondaryText v-intro">
-                        Homyz keeps your search simple: browse every listing, keep a shortlist and book viewings without phone calls.
+                        Homyz keeps your search simple: browse every listing, keep a shortlist and book visits, all in one place.
                     </p>
                     <Accordion
                         className="accordion"

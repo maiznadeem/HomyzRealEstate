@@ -126,7 +126,97 @@
         margin: 0.5rem;
     }
 
-    .h-menu > .mantine-Avatar-root {
-        margin: 0.5rem 1rem;
+}
+
+/* Visible keyboard focus on the dark header (and the light phone panel). */
+.h-wrapper :focus-visible {
+    outline: 2px solid #9db4ff;
+    outline-offset: 3px;
+    border-radius: 6px;
+}
+
+.h-avatar-button {
+    display: flex;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* Same footprint as the "Log in" button, shown while Auth0 works out who is signed in. */
+.h-auth-placeholder {
+    display: inline-block;
+    width: 5.2rem;
+    height: 2.5rem;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+@media (max-width: 768px) {
+    .menu-icon {
+        min-width: 44px;
+        min-height: 44px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .h-wrapper :focus-visible {
+        outline-color: var(--blue);
+    }
+
+    .h-menu > a,
+    .h-link,
+    .h-account > a,
+    .h-account > .h-link {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+        width: 100%;
+    }
+
+    .h-account {
+        display: flex;
+        flex-direction: column;
+        margin-top: 0.25rem;
+        padding-top: 0.25rem;
+        border-top: 1px solid var(--line);
+    }
+
+    .h-account > a,
+    .h-account > .h-link {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        text-align: left;
+        font-weight: 500;
+    }
+
+    .h-account > a::after,
+    .h-account > .h-link::after {
+        display: none;
+    }
+
+    .h-account > a:hover,
+    .h-account > .h-link:hover,
+    .h-account > a.active {
+        color: var(--blue);
+        background: var(--lightBlue);
+    }
+
+    .h-account-label {
+        display: block;
+        padding: 0.5rem 1rem 0.25rem;
+        color: var(--muted);
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .h-account-label small {
+        display: block;
+        font-weight: 400;
+        overflow-wrap: anywhere;
+    }
+
+    .h-auth-placeholder {
+        width: auto;
+        margin: 0.5rem;
+        background: var(--lightBlue);
     }
 }

@@ -1,19 +1,20 @@
-import React, { useContext, useState } from 'react'
-import { useMutation, useQuery } from 'react-query'
-import { Link, useParams } from 'react-router'
+import React, { useContext, useEffect, useState } from 'react'
+import { useQuery } from 'react-query'
+import { Link, useParams, useSearchParams } from 'react-router'
+import { useAuth0 } from '@auth0/auth0-react'
+import { Skeleton } from '@mantine/core'
 import { FaShower } from 'react-icons/fa'
-import { MdMeetingRoom, MdLocationPin, MdOutlineHomeWork, MdArrowBack } from 'react-icons/md'
+import { MdMeetingRoom, MdLocationPin, MdOutlineHomeWork, MdOutlineErrorOutline, MdArrowBack } from 'react-icons/md'
 import { AiTwotoneCar } from 'react-icons/ai'
-import { toast } from 'react-toastify'
 
 import Map from '../../components/Map/Map'
 import useAuthCheck from '../../hooks/useAuthCheck'
 import useDocumentTitle from '../../hooks/useDocumentTitle'
 import BookingModal from '../../components/BookingModal/BookingModal'
 import EmptyState from '../../components/EmptyState/EmptyState'
-import { Loading } from '../../components/ListingsPage/ListingsPage'
+import CancelVisitModal from '../../components/BookingModal/CancelVisitModal'
 import UserDetailsContext from '../../context/UserDetailsContext'
-import { cancelBooking, getProperty } from '../../utils/api'
+import { errorMessage, getProperty } from '../../utils/api'
 import Heart from '../../components/Heart/Heart'
 import { propertyImageUrl, showPlaceholderOnError } from '../../utils/images'
 import { formatPrice, formatVisitDate, plural } from '../../utils/format'
@@ -25,43 +26,84 @@ const parkingLabel = (count) => {
     return n === 0 ? 'No parking' : plural(n, 'parking space')
 }
 
+const PropertySkeleton = () => (
+    <div className="wrapper" role="status" aria-label="Loading property">
+        <div className="paddings innerWidth property-container">
+            <Skeleton height={20} width={120} />
+            <Skeleton style={{ aspectRatio: '16 / 9', maxHeight: '35rem' }} radius="lg" />
+            <div className="property-details">
+                <div className="property-info">
+                    <Skeleton height={36} width="70%" />
+                    <div className="property-skeleton-facts">
+                        <Skeleton height={24} width={110} />
+                        <Skeleton height={24} width={110} />
+                        <Skeleton height={24} width={110} />
+                    </div>
+                    <Skeleton height={14} />
+                    <Skeleton height={14} />
+                    <Skeleton height={14} width="60%" />
+                </div>
+                <Skeleton height={280} radius="md" />
+            </div>
+        </div>
+    </div>
+)
+
 const Property = () => {
 
     const { propertyID: id } = useParams()
-    const { data, isLoading, isError } = useQuery(["residency", id], () => getProperty(id), { retry: false })
-    useDocumentTitle(data?.title ?? (isError ? 'Property not found' : 'Property'))
+    const { data, isLoading, isError, error, refetch } = useQuery(["residency", id], () => getProperty(id), {
+        // A missing property won't appear on retry; anything else gets one more try.
+        retry: (count, err) => err?.response?.status !== 404 && count < 1,
+    })
+    const notFound = isError && error?.response?.status === 404
+    useDocumentTitle(data?.title ?? (isLoading ? 'Loading property…' : notFound ? 'Property not found' : 'Property'))
 
     const [ modalOpened, setModalOpened ] = useState(false)
+    const [ cancelOpened, setCancelOpened ] = useState(false)
     const { validateLogin } = useAuthCheck()
+    const { isAuthenticated, isLoading: authLoading } = useAuth0()
+    const [ searchParams, setSearchParams ] = useSearchParams()
 
-    const { userDetails: { bookings }, setUserDetails } = useContext(UserDetailsContext)
+    const { userDetails: { bookings, bookingsLoaded } } = useContext(UserDetailsContext)
     const booking = bookings?.find((b) => b?.id === id)
 
-    const { mutate: removeBooking, isLoading: removing } = useMutation({
-        mutationFn: () => cancelBooking(id),
-        onSuccess: () => {
-            setUserDetails( prev => ({
-                ...prev,
-                bookings: prev.bookings.filter(b => b?.id !== id)
-            }))
-            toast.success("Visit cancelled.", { position: "bottom-right" })
-        }
-    })
+    // "Book a visit" while logged out returns here with ?book=1: open the booking modal once
+    // the person is signed in and their bookings are known, then drop the param.
+    const wantsBooking = searchParams.get('book') === '1'
+    useEffect(() => {
+        if (!wantsBooking || authLoading) return
+        if (isAuthenticated && !(bookingsLoaded && data)) return
+        if (isAuthenticated && !booking) setModalOpened(true)
+        const next = new URLSearchParams(searchParams)
+        next.delete('book')
+        setSearchParams(next, { replace: true })
+    }, [wantsBooking, authLoading, isAuthenticated, bookingsLoaded, data, booking, searchParams, setSearchParams])
 
     if (isLoading) {
-        return <div className="wrapper"><Loading /></div>
+        return <PropertySkeleton />
     }
 
     if (isError) {
         return (
             <div className="wrapper">
-                <EmptyState
-                    icon={<MdOutlineHomeWork />}
-                    title="This property isn't available"
-                    action={{ label: 'Browse properties', to: '/properties' }}
-                >
-                    It may have been removed, or the link may be wrong.
-                </EmptyState>
+                {notFound ? (
+                    <EmptyState
+                        icon={<MdOutlineHomeWork />}
+                        title="This property isn't available"
+                        action={{ label: 'Browse properties', to: '/properties' }}
+                    >
+                        It may have been removed, or the link may be wrong.
+                    </EmptyState>
+                ) : (
+                    <EmptyState
+                        icon={<MdOutlineErrorOutline />}
+                        title="This property couldn't be loaded"
+                        action={{ label: 'Try again', onClick: () => refetch() }}
+                    >
+                        {errorMessage(error, "Check your connection and try again.")}
+                    </EmptyState>
+                )}
             </div>
         )
     }
@@ -109,19 +151,24 @@ const Property = () => {
                                 <p>Your visit is booked for <strong>{formatVisitDate(booking.date)}</strong>.</p>
                                 <button
                                     type="button"
-                                    className="button button--outline-danger"
-                                    onClick={() => removeBooking()}
-                                    disabled={removing}
+                                    className="button button--subtle"
+                                    onClick={() => setCancelOpened(true)}
                                 >
-                                    {removing ? 'Cancelling…' : 'Cancel visit'}
+                                    Cancel visit
                                 </button>
+                                <CancelVisitModal
+                                    opened={cancelOpened}
+                                    onClose={() => setCancelOpened(false)}
+                                    propertyId={id}
+                                    date={booking.date}
+                                />
                             </div>
                         ) : (
                             <button
                                 type="button"
                                 className="button property-book"
                                 onClick={() => {
-                                    validateLogin() && setModalOpened(true)
+                                    validateLogin(`/properties/${encodeURIComponent(id)}?book=1`) && setModalOpened(true)
                                 }}
                             >
                                 Book a visit

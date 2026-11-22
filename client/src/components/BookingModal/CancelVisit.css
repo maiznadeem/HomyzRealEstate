@@ -1,0 +1,14 @@
+/* The quiet "Cancel visit" button used next to a booked visit. */
+.button--subtle {
+    background: white;
+    color: var(--primary);
+    border: 1px solid var(--line);
+}
+
+.button--subtle:hover {
+    background: white;
+    filter: none;
+    box-shadow: none;
+    border-color: #c92a2a;
+    color: #c92a2a;
+}

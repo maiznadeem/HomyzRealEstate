@@ -9,6 +9,8 @@ const Favourites = () => (
         intro="Homes you've saved. Tap the heart on any listing to add or remove it."
         account={{
             loadedKey: 'favouritesLoaded',
+            errorKey: 'favouritesError',
+            queryKey: 'allFavourites',
             loginTitle: 'Log in to see your favourites',
             loginText: 'Save homes you like and find them here on any device.',
         }}

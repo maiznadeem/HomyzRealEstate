@@ -29,6 +29,8 @@
 
 .search-bar > .button {
     flex-shrink: 0;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
 }
 
 .search-bar-pin {

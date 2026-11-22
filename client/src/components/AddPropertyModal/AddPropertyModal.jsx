@@ -12,9 +12,12 @@ import './AddPropertyModal.css'
 const AddPropertyModal = ({ opened, setOpened }) => {
 
     const [active, setActive] = useState(0);
-    const nextStep = () => setActive((current) => (current < 4 ? current + 1 : current));
+    const nextStep = () => setActive((current) => (current < 3 ? current + 1 : current));
     const prevStep = () => setActive((current) => (current > 0 ? current - 1 : current));
     const isPhone = useMediaQuery('(max-width: 36em)')
+
+    // Set when the server rejects the address as a duplicate, so the Location step can show it.
+    const [locationError, setLocationError] = useState(null)
 
     const [propertyDetails, setPropertyDetails] = useState({
         title: "",
@@ -25,9 +28,9 @@ const AddPropertyModal = ({ opened, setOpened }) => {
         address: "",
         image: null,
         facilities: {
-            bedrooms: 0,
+            bedrooms: 1,
             parkings: 0,
-            bathrooms: 0,
+            bathrooms: 1,
         },
     })
 
@@ -41,6 +44,8 @@ const AddPropertyModal = ({ opened, setOpened }) => {
             centered={!isPhone}
             fullScreen={isPhone}
             padding={isPhone ? "md" : "xl"}
+            closeOnClickOutside={false}
+            closeButtonProps={{ size: 44, "aria-label": "Close" }}
         >
             <div className="apm-body">
 
@@ -57,6 +62,8 @@ const AddPropertyModal = ({ opened, setOpened }) => {
                             nextStep={nextStep}
                             propertyDetails={propertyDetails}
                             setPropertyDetails={setPropertyDetails}
+                            locationError={locationError}
+                            setLocationError={setLocationError}
                         />
                     </Stepper.Step>
                     <Stepper.Step label="Cover photo" description="Main image">
@@ -82,11 +89,9 @@ const AddPropertyModal = ({ opened, setOpened }) => {
                             setPropertyDetails={setPropertyDetails}
                             setOpened={setOpened}
                             setActiveStep={setActive}
+                            setLocationError={setLocationError}
                         />
                     </Stepper.Step>
-                    <Stepper.Completed>
-                        <p className="apm-done">All steps are done. Use Back to review an earlier step.</p>
-                    </Stepper.Completed>
                 </Stepper>
 
             </div>

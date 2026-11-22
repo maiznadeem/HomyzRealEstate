@@ -5,10 +5,20 @@ import { Link } from 'react-router';
 
 import 'swiper/css'
 import './Residencies.css'
-import { sliderSettings } from '../../utils/common'
 
 import PropertyCard from '../PropertyCard/PropertyCard';
 import useProperties from '../../hooks/useProperties';
+
+// One card plus a peek of the next on phones; more cards as the screen widens.
+const sliderSettings = {
+    slidesPerView: 1.15,
+    spaceBetween: 16,
+    breakpoints: {
+        600: { slidesPerView: 2, spaceBetween: 24 },
+        750: { slidesPerView: 3, spaceBetween: 32 },
+        1100: { slidesPerView: 4, spaceBetween: 50 },
+    },
+}
 
 const Residencies = () => {
 

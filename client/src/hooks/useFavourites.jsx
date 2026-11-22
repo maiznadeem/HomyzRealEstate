@@ -11,7 +11,8 @@ const useFavourites = () => {
     const { data, isLoading, isError, refetch } = useQuery({
         queryKey: "allFavourites",
         queryFn: getAllFavourites,
-        onSuccess: (data) => setUserDetails(prev => ({ ...prev, favourites: data ?? [], favouritesLoaded: true })),
+        onSuccess: (data) => setUserDetails(prev => ({ ...prev, favourites: data ?? [], favouritesLoaded: true, favouritesError: false })),
+        onError: () => setUserDetails(prev => ({ ...prev, favouritesError: true })),
         enabled: Boolean(userDetails?.registered),
         staleTime: 30000,
     })
