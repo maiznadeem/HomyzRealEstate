@@ -7,10 +7,13 @@ const matches = (given, expected) => {
     return a.length === b.length && timingSafeEqual(a, b)
 }
 
-// Vercel sends `Authorization: Bearer <CRON_SECRET>` on cron invocations.
+// The edge Worker's cron passes originAuth (req.viaEdge) and sends X-Edge-Cron, a header the Worker strips from
+// every visitor request. Vercel's cron sends `Authorization: Bearer <CRON_SECRET>` instead.
 export const keepAlive = async (req, res) => {
     const secret = process.env.CRON_SECRET
-    if (!secret || !matches(req.get('authorization') ?? '', `Bearer ${secret}`)) {
+    const fromCron = Boolean(secret) && matches(req.get('authorization') ?? '', `Bearer ${secret}`)
+    const fromEdgeCron = req.viaEdge === true && req.get('x-edge-cron') === '1'
+    if (!fromEdgeCron && !fromCron) {
         return res.status(401).json({ message: 'Unauthorized.' })
     }
     try {

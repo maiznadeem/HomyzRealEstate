@@ -13,21 +13,21 @@ Homyz Real Estate is live at [**homyz.himaiz.com**](https://homyz.himaiz.com/). 
 | Hostname | Served by | Behind it |
 |---|---|---|
 | `homyz.himaiz.com` | Cloudflare Worker `homyz-web`: Workers static assets from `client/dist`, single-page-app fallback, headers in `client/public/_headers` (`client/wrangler.toml`) | nothing (no origin server) |
-| `api.homyz.himaiz.com` | Cloudflare Worker `homyz-api-edge` (`edge/api/`), which forwards every request | Vercel project `homyz-real-estate-backend` (`server/`): Express 5 on Node 22.x serverless functions in region `iad1` (Washington, D.C.), at `homyz-real-estate-backend.vercel.app` |
+| `api.homyz.himaiz.com` | Cloudflare Worker `homyz-api-edge` (`edge/api/`), which forwards every request | Cloud Run service `homyz-backend` (`server/`) in Google Cloud project `maiz-portfolio`, region `us-central1` (Iowa): Express 5 on Node 22 in a container (`server/Dockerfile`). It scales to zero and runs at most 2 instances (1 CPU, 512 MiB each). |
 
-- **Data:** MongoDB Atlas, free M0 cluster on GCP `asia-south1` (Mumbai), reached through Prisma.
+- **Data:** MongoDB Atlas, free M0 cluster `maiz-portfolio` on GCP `us-central1` (Iowa), in the Atlas project *Maiz Portfolio US*, reached through Prisma. It moved from `asia-south1` (Mumbai) on 2026-11-22 so it sits in the same region as the API.
 - **Images:** Cloudinary (cloud `dwujonydh`). Browsers upload straight to Cloudinary; the API only signs uploads.
 - **Sign-in:** Auth0 tenant `homyz-real-estate.us.auth0.com`, using Auth0's hosted login page.
-- **Retired:** the old Vercel web project (`homyz-real-estate.vercel.app`) was deleted on 2026-11-22. Only the backend project is left on Vercel.
+- **Retired:** the Vercel web project (`homyz-real-estate.vercel.app`) was deleted on 2026-11-22. The API ran on the Vercel project `homyz-real-estate-backend` until it moved to Cloud Run on 2026-11-22; that project stays only briefly as a rollback, then it is deleted too.
 
 ### CI
 
 - **No GitHub Actions workflows.** Pull requests get three checks from GitHub apps:
   - GitGuardian scans for leaked secrets.
-  - Vercel reports on the backend, but skips building pull-request previews (see CD).
-  - Vercel Preview Comments.
+  - Vercel, until the old backend project is deleted (see Hosting).
 - **Workers Builds** posts one check per Worker on pushes to `main`. Preview builds are off, so pull requests get no Cloudflare checks.
-- **No automated tests.** Prove changes locally before pushing: `npm run build` in `client/`, and start the server.
+- **Cloud Build** builds the backend only on pushes to `main` (see CD); pull requests get no Google check.
+- **No automated tests.** Prove changes locally before pushing: `npm run build` in `client/`, and for the server, `docker build server` and run the image.
 - `main` has no branch protection.
 
 ### CD
@@ -38,33 +38,24 @@ Every part deploys on its own when `main` changes:
 |---|---|---|
 | Site (`homyz-web`) | Cloudflare Workers Builds | branch `main`, root `/client`, build `npm run build`, deploy `npx wrangler deploy`, watch path `client/*`, previews off, **no build variables** |
 | API Worker (`homyz-api-edge`) | Cloudflare Workers Builds | branch `main`, root `/edge/api`, no build command, deploy `npx wrangler deploy`, watch path `edge/api/*`, previews off, **no build variables** |
-| Backend (`homyz-real-estate-backend`) | Vercel's GitHub integration | root `server/`. Builds production only, and only when a push to `main` changes `server/`; previews are never built (see below). |
+| Backend (`homyz-backend`) | Cloud Build trigger `homyz-backend-deploy` in `maiz-portfolio` | runs when a push to `main` changes `server/**`: builds `server/Dockerfile`, pushes the image to Artifact Registry (`cloud-run-source-deploy`), updates the Cloud Run service, then deletes the stored images (Cloud Run keeps its own copy) to stay inside the free storage |
 
 - **Why the site needs no build variables:** the site's public settings (Auth0 domain, client ID and audience, API URL, Cloudinary cloud and key) have production defaults in `client/config.js`. The `VITE_*` overrides are only for local development.
 - **Manual fallback:** with `CLOUDFLARE_API_TOKEN` set, run `npm run deploy` in `client/` or `npx wrangler@4 deploy` in `edge/api/`.
-- **The backend's Ignored Build Step** is a Vercel project setting, so it isn't in this repo:
+- **Backend configuration:** `NODE_ENV`, `ORIGIN_AUTH_MODE` and `CLOUDINARY_CLOUD_NAME` are plain environment variables on the service. Every secret is in the one Secret Manager secret `homyz-secrets` (a JSON object), mounted as `APP_SECRETS` and unpacked by `server/config/appSecrets.js` at startup. Only the service's own account, `homyz-backend@maiz-portfolio.iam.gserviceaccount.com`, can read it.
+- **To change a backend secret:** add a new version of `homyz-secrets`, then start a new revision so instances read it, for example `gcloud run services update homyz-backend --region us-central1 --project maiz-portfolio --update-labels secrets-updated=<date>`.
 
-  ```sh
-  if [ "$VERCEL_ENV" != "production" ]; then exit 0; fi; git diff --quiet HEAD^ HEAD -- .
-  ```
+**Keep-alive cron:** a Cron Trigger on `homyz-api-edge` (`0 6 * * *`, in `edge/api/wrangler.toml`) runs the Worker's `scheduled()` handler, which calls `GET /api/keepalive`. That runs one small query so Atlas doesn't pause the free cluster.
 
-  It runs in `server/`. Exit code 0 means skip:
-  - Preview builds are always skipped.
-  - A push to `main` builds only when `server/` changed.
-  - If the clone lacks the previous commit, `git diff` fails, and Vercel builds anyway.
-
-  After changing a backend environment variable, redeploy the current production deployment from the Vercel dashboard, unchecking **Use project's Ignore Build Step**. Otherwise the change waits for the next `server/` push.
-
-**Keep-alive cron:** `server/vercel.json` schedules `GET /api/keepalive` at `0 6 * * *`. On Vercel Hobby the run lands at some point between 06:00 and 06:59 UTC. It runs one small query so Atlas doesn't pause the free cluster.
-
-- **How it passes the origin lock:** Vercel calls the production deployment directly, not through Cloudflare, so the request has no `X-Origin-Auth`. The origin-lock middleware exempts this one path. The handler then requires `Authorization: Bearer <CRON_SECRET>`, compared in constant time, and otherwise returns 401.
-- **To run it on demand:** `vercel crons run /api/keepalive -p homyz-real-estate-backend`.
-- **To read the result:** `vercel logs requests -p homyz-real-estate-backend --since 10m --query "requestPath:/api/keepalive"`.
+- **Who can call it:** the cron's request carries the origin secret and an `X-Edge-Cron` header. The Worker strips `X-Edge-Cron` from every visitor request, and the handler requires both, so the public gets 401.
+- **If it fails:** the run throws and shows as an error in the Worker's logs (Cloudflare dashboard, `homyz-api-edge`, Logs).
+- **To run it on demand:** in `edge/api/`, with `ORIGIN_AUTH` in a local `.dev.vars` file, run `npx wrangler@4 dev --test-scheduled` and open `http://localhost:8787/__scheduled?cron=0+6+*+*+*`. Delete `.dev.vars` afterwards.
 
 ### Rollback
 
 - **Site or API Worker:** in the Cloudflare dashboard, open the Worker, then **Deployments**, and roll back to an earlier version. Or run `npx wrangler@4 rollback [version-id]` from the Worker's folder. Also revert the commit, or the next push to that path deploys it again.
-- **Backend:** in Vercel, use **Instant Rollback**. On Hobby it only goes back to the previous production deployment, so for anything older, revert the commit on `main`. A rollback also restores that deployment's cron definition and its copy of `CRON_SECRET`.
+- **Backend:** in the Cloud Run console, open `homyz-backend`, then **Revisions**, and send all traffic to an earlier revision. Or run `gcloud run services update-traffic homyz-backend --region us-central1 --project maiz-portfolio --to-revisions <revision>=100`. Also revert the commit, or the next push to `server/` deploys it again.
+- **Back to Vercel (only while that project still exists):** set `ORIGIN` in `edge/api/wrangler.toml` back to `https://homyz-real-estate-backend.vercel.app`. First point that project's `DATABASE_URL` at the Iowa cluster: it still holds the Mumbai URL, and the Mumbai copy stops receiving writes at the switch.
 - **Database:** Atlas M0 has no backups. Take a `mongodump` before risky data changes.
 - **Auth0 and Cloudflare zone settings:** these aren't in this repo. Revert them by hand.
 
@@ -85,12 +76,12 @@ Every part deploys on its own when `main` changes:
 
     It builds the target from its `ORIGIN` variable, copying only the path and query, so a request can't redirect it to another host.
   - **The middleware** `server/middleware/originAuth.js` runs first in the chain and compares `X-Origin-Auth` with `ORIGIN_AUTH` in constant time:
-    - With `ORIGIN_AUTH_MODE=enforce`, which is set in production, every other request gets 403. The one exception is `/api/keepalive` (see CD).
+    - With `ORIGIN_AUTH_MODE=enforce`, which is set in production, every other request gets 403.
     - Any other mode only logs.
     - Without `ORIGIN_AUTH` the check is off, as in local development.
   - **The rate limiter** trusts `X-Client-IP` only when the secret matches.
 - **The site ("Pattern B"):** static assets on Workers, so there's no origin server to bypass. `workers_dev` and `preview_urls` are off. No Worker script runs for the site, so its traffic doesn't count against the account's daily Worker request quota. API requests do count.
-- **Vercel's side:** no Vercel Firewall rules. Preview builds are skipped (see CD). As a second guard, Deployment Protection (Vercel Authentication) stays on for previews, so any preview URL asks for a Vercel login.
+- **Cloud Run's side:** the service allows unauthenticated invocations, because the Worker can't present Google credentials, so the origin lock is what keeps direct `*.run.app` requests out.
 
 ### Secrets
 
@@ -98,16 +89,15 @@ Names only; the values never go in the repo.
 
 | Name | Where it lives | Used for |
 |---|---|---|
-| `ORIGIN_AUTH` | Vercel production (Sensitive), and a Worker secret on `homyz-api-edge` | origin lock |
-| `ORIGIN_AUTH_MODE` | Vercel production (Sensitive) | origin lock mode (`enforce`) |
-| `DATABASE_URL` | Vercel production only (Sensitive) | MongoDB connection, as user `homyz-app` |
-| `CRON_SECRET` | Vercel production only (Sensitive) | keep-alive cron |
-| `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Vercel production only (Sensitive) | signing image uploads |
+| `ORIGIN_AUTH` | Secret Manager `homyz-secrets`, and a Worker secret on `homyz-api-edge` | origin lock |
+| `DATABASE_URL` | Secret Manager `homyz-secrets` | MongoDB connection, as user `homyz-app` |
+| `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Secret Manager `homyz-secrets` | signing image uploads |
+| `CRON_SECRET` | Secret Manager `homyz-secrets` | Vercel's old keep-alive cron; removed with the Vercel project |
 | `DOMAIN`, `CLIENT_ID`, `CLIENT_SECRET` | Auth0 Action secrets on *Homyz Real Estate - link accounts by email* | the Action's machine-to-machine app (read and update users) |
 
-- **Not secrets:** `CLOUDINARY_CLOUD_NAME` and `PORT` on Vercel.
+- **Not secrets:** `ORIGIN_AUTH_MODE`, `CLOUDINARY_CLOUD_NAME` and `NODE_ENV`, set on the Cloud Run service. Cloud Run sets `PORT`.
 - **Public by design:** the Auth0 and Cloudinary identifiers in `client/config.js`.
-- **Cloudflare deploys:** Workers Builds uses the account's shared build token. There are no GitHub Actions secrets.
+- **Deploys:** Workers Builds uses the account's shared build token, and Cloud Build uses the project's default build service account. There are no GitHub Actions secrets.
 
 ### Auth0
 
@@ -128,7 +118,7 @@ Names only; the values never go in the repo.
 ### Data access
 
 - **The API's database user** is `homyz-app`, with `readWrite` on `Homyz-Database` only. That database holds the `Residency`, `User`, `RateLimit` (expires on its own) and `UploadNonce` collections.
-- **The cluster** also hosts other apps' databases, each with its own user. Its network access isn't IP-restricted, because Vercel Hobby has no fixed outbound addresses. Per-app credentials and TLS protect it.
+- **The cluster** also hosts the procurement app's database, with its own user. Its network access isn't IP-restricted, because Cloud Run has no fixed outbound addresses without a paid NAT. Per-app credentials and TLS protect it.
 - **Images** live in Cloudinary's *Homyz Real Estate* folder, written only through the signed upload preset.
 
 ## Key Features
@@ -150,7 +140,7 @@ Names only; the values never go in the repo.
 ![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
 ![JWT](https://img.shields.io/badge/json%20web%20tokens-323330?style=for-the-badge&logo=json-web-tokens&logoColor=pink)
-![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![Google Cloud Run](https://img.shields.io/badge/Google%20Cloud%20Run-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)
 ![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
 ![VS Code](https://img.shields.io/badge/Visual_Studio_Code-0078D4?style=for-the-badge&logo=visual%20studio%20code&logoColor=white)
 
@@ -203,7 +193,7 @@ cd client && npm run dev
 
 5. Open `http://localhost:3000`. The API runs on `http://localhost:8000`.
 
-   Deployed environments allow only production origins. The site's Auth0 application and the API's CORS list contain only the production site, and the backend builds no Vercel previews. Don't add `localhost` to the production Auth0 application. To log in locally, create a separate development application (or tenant) that allows `http://localhost:3000`, and point the `VITE_AUTH0_*` variables in `client/.env.local` at it. Browsing listings works locally without logging in.
+   Deployed environments allow only production origins. The site's Auth0 application and the API's CORS list contain only the production site, and the backend has no preview deployments. Don't add `localhost` to the production Auth0 application. To log in locally, create a separate development application (or tenant) that allows `http://localhost:3000`, and point the `VITE_AUTH0_*` variables in `client/.env.local` at it. Browsing listings works locally without logging in.
 
 ### Auth0 setup
 
@@ -215,7 +205,7 @@ The client logs in with the Auth0 SPA application and requests an access token f
 
 ### Database
 
-The server uses Prisma with MongoDB Atlas on the free M0 tier. Atlas pauses free clusters after long inactivity, so a daily Vercel cron (`crons` in `server/vercel.json`) calls `GET /api/keepalive`, which runs one small query. Vercel sends `Authorization: Bearer $CRON_SECRET`; without `CRON_SECRET` set the endpoint always returns 401. If the site still shows "Something went wrong" while loading properties, resume the cluster in Atlas.
+The server uses Prisma with MongoDB Atlas on the free M0 tier. Atlas pauses free clusters after long inactivity, so the API Worker's daily cron calls `GET /api/keepalive`, which runs one small query (see Deployment, CD). If the site still shows "Something went wrong" while loading properties, resume the cluster in Atlas.
 
 Use a database user limited to the app's database (role `readWrite` on `Homyz-Database`), not one with access to every database on the cluster.
 
