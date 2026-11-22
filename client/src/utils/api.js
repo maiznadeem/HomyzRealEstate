@@ -88,8 +88,10 @@ export const signUpload = async (paramsToSign) => {
     return res.data.signature
 }
 
+// Resolves with the created residency (its `id` is the new listing's address).
 export const createResidency = async (data) => {
-    await api.post(`/residency/create`, { data })
+    const res = await api.post(`/residency/create`, { data })
+    return res.data.residency
 }
 
 export { errorMessage }

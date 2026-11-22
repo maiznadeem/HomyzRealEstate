@@ -1,6 +1,7 @@
 import React, { useContext, useMemo } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 import { useSearchParams } from 'react-router'
+import { useQueryClient } from 'react-query'
 import { PuffLoader } from 'react-spinners'
 import { MdOutlineSearchOff, MdOutlineErrorOutline, MdLockOutline } from 'react-icons/md'
 
@@ -10,7 +11,8 @@ import EmptyState from '../EmptyState/EmptyState'
 import useProperties from '../../hooks/useProperties'
 import useLogin from '../../hooks/useLogin'
 import useDocumentTitle from '../../hooks/useDocumentTitle'
-import UserDetailsContext from '../../context/UserDetailsContext'
+import UserDetailsContext, { retryRegistration } from '../../context/UserDetailsContext'
+import { errorMessage } from '../../utils/api'
 import { plural } from '../../utils/format'
 
 import './ListingsPage.css'
@@ -30,15 +32,19 @@ export const Loading = () => (
 /**
  * Properties, Favourites and Bookings share this page.
  * - selectIds: limits the list to these property IDs (from the signed-in user's data); omit for all properties.
- * - account: { loadedKey, loginTitle, loginText } for pages that need a login.
+ * - account: { loadedKey, errorKey, queryKey, loginTitle, loginText } for pages that need a login.
  * - countNoun: [singular, plural] for the count above the grid.
+ * - sortCards(cards, userDetails): optional ordering of the visible cards.
+ * - renderActions(card, userDetails): optional extra controls under each card.
+ * - isMuted(card, userDetails): dims a card (e.g. a visit in the past).
  */
-const ListingsPage = ({ title, intro, account, selectIds, noteFor, empty, countNoun = ['property', 'properties'] }) => {
+const ListingsPage = ({ title, intro, account, selectIds, noteFor, empty, sortCards, renderActions, isMuted, countNoun = ['property', 'properties'] }) => {
     useDocumentTitle(title)
-    const { data, isError, isLoading, refetch } = useProperties()
+    const { data, isError, error, isLoading, refetch } = useProperties()
+    const queryClient = useQueryClient()
     const { isAuthenticated, isLoading: authLoading } = useAuth0()
     const login = useLogin()
-    const { userDetails } = useContext(UserDetailsContext)
+    const { userDetails, setUserDetails } = useContext(UserDetailsContext)
     const [searchParams, setSearchParams] = useSearchParams()
     const query = searchParams.get('search') ?? ''
     const setQuery = (value) => setSearchParams(value ? { search: value } : {}, { replace: true })
@@ -48,7 +54,8 @@ const ListingsPage = ({ title, intro, account, selectIds, noteFor, empty, countN
         () => (data ?? []).filter((p) => !ids || ids.includes(p.id)),
         [data, ids],
     )
-    const shown = listings.filter((p) => matches(p, query))
+    const filtered = listings.filter((p) => matches(p, query))
+    const shown = sortCards ? sortCards(filtered, userDetails) : filtered
 
     const header = (
         <header className="listings-header">
@@ -62,8 +69,33 @@ const ListingsPage = ({ title, intro, account, selectIds, noteFor, empty, countN
         </header>
     )
 
+    const registerError = isAuthenticated ? userDetails.registerError : null
+    const loadFailed = isAuthenticated && account?.errorKey && userDetails[account.errorKey]
+
     let body
-    if (account && (authLoading || (isAuthenticated && !userDetails[account.loadedKey]))) {
+    if (account && registerError) {
+        // Signing in to the Homyz API failed: say why instead of spinning forever.
+        const unverified = registerError.status === 403
+        body = (
+            <EmptyState
+                icon={<MdOutlineErrorOutline />}
+                title={unverified ? 'Verify your email to continue' : "We couldn't finish signing you in"}
+                action={unverified ? { label: 'Log in again', onClick: () => login() } : { label: 'Try again', onClick: () => retryRegistration(setUserDetails) }}
+            >
+                {registerError.message}
+            </EmptyState>
+        )
+    } else if (account && loadFailed) {
+        body = (
+            <EmptyState
+                icon={<MdOutlineErrorOutline />}
+                title={`${title} couldn't be loaded`}
+                action={{ label: 'Try again', onClick: () => queryClient.refetchQueries(account.queryKey) }}
+            >
+                Check your connection and try again.
+            </EmptyState>
+        )
+    } else if (account && (authLoading || (isAuthenticated && !userDetails[account.loadedKey]))) {
         body = <Loading />
     } else if (account && !isAuthenticated) {
         body = (
@@ -76,7 +108,7 @@ const ListingsPage = ({ title, intro, account, selectIds, noteFor, empty, countN
     } else if (isError) {
         body = (
             <EmptyState icon={<MdOutlineErrorOutline />} title="Properties couldn't be loaded" action={{ label: 'Try again', onClick: () => refetch() }}>
-                Check your connection and try again.
+                {errorMessage(error, 'Check your connection and try again.')}
             </EmptyState>
         )
     } else if (listings.length === 0) {
@@ -90,11 +122,20 @@ const ListingsPage = ({ title, intro, account, selectIds, noteFor, empty, countN
     } else {
         body = (
             <>
-                <p className="listings-count" aria-live="polite">
+                <p className="listings-count" role="status" aria-live="polite">
                     {query ? `${plural(shown.length, 'result')} for "${query}"` : plural(shown.length, ...countNoun)}
                 </p>
                 <div className="listings-grid">
-                    {shown.map((card) => <PropertyCard card={card} key={card.id} note={noteFor?.(card, userDetails)} />)}
+                    {shown.map((card) => {
+                        const cardNode = <PropertyCard card={card} note={noteFor?.(card, userDetails)} />
+                        if (!renderActions && !isMuted) return <React.Fragment key={card.id}>{cardNode}</React.Fragment>
+                        return (
+                            <div className={`listings-cell ${isMuted?.(card, userDetails) ? 'listings-cell--muted' : ''}`} key={card.id}>
+                                {cardNode}
+                                {renderActions && <div className="listings-actions">{renderActions(card, userDetails)}</div>}
+                            </div>
+                        )
+                    })}
                 </div>
             </>
         )

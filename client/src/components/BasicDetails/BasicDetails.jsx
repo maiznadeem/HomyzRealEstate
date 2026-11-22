@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { TextInput, Textarea, NumberInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 
 import StepHeader from "../AddPropertyModal/StepHeader";
 import StepActions from "../AddPropertyModal/StepActions";
 import { validateString } from "../../utils/common";
+
+const MIN_PRICE = 1000
+const MAX_PRICE = 1_000_000_000
 
 const BasicDetails = ({ prevStep, nextStep, propertyDetails, setPropertyDetails }) => {
 
@@ -15,14 +18,21 @@ const BasicDetails = ({ prevStep, nextStep, propertyDetails, setPropertyDetails 
             price: propertyDetails.price,
         },
         validate: {
-            title: (value) => validateString(value),
-            description: (value) => validateString(value),
+            title: (value) => validateString(value?.trim()),
+            description: (value) => validateString(value?.trim()),
             price: (value) =>
-                value < 1000 ? "Must be at least 1,000" : null,
+                !Number.isInteger(value) || value < MIN_PRICE || value > MAX_PRICE
+                    ? "Enter a whole-number price from 1,000 to 1,000,000,000"
+                    : null,
         }
     });
 
     const { title, description, price } = form.values
+
+    // Keep the draft current so closing and reopening the modal doesn't lose what was typed.
+    useEffect(() => {
+        setPropertyDetails( prev => ({ ...prev, title, description, price }) )
+    }, [title, description, price, setPropertyDetails])
 
     const handleSubmit = () => {
         const { hasErrors } = form.validate()
@@ -61,10 +71,11 @@ const BasicDetails = ({ prevStep, nextStep, propertyDetails, setPropertyDetails 
                 <NumberInput
                     withAsterisk
                     label="Price (USD)"
-                    description="Minimum 1,000"
+                    description="Whole dollars, from 1,000"
                     placeholder="250000"
-                    min={0}
-                    max={1000000000}
+                    precision={0}
+                    min={MIN_PRICE}
+                    max={MAX_PRICE}
                     { ...form.getInputProps("price") }
                 />
             </div>

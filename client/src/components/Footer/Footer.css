@@ -27,9 +27,15 @@
 .f-menu {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem 1.75rem;
+    gap: 0 1.75rem;
     font-weight: 500;
     color: var(--primary);
+}
+
+.f-menu a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
 }
 
 .f-menu a:hover {

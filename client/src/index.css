@@ -28,8 +28,10 @@ select {
 }
 
 :focus-visible {
-    outline: 3px solid rgba(64, 102, 255, 0.55);
+    /* Blue ring with a white gap: the gap separates it from dark backgrounds, the ring from light ones. */
+    outline: 2px solid var(--blue);
     outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.95);
     border-radius: 4px;
 }
 

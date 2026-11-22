@@ -121,7 +121,7 @@ Names only; the values never go in the repo.
 ### Bot protection
 
 - **No Cloudflare bot product is used.** The zone's Bot Fight Mode is off on purpose: the Free plan can't exempt API clients from it. Turnstile isn't needed, because Homyz has no anonymous forms of its own. Contact is a `mailto:` link, and every write needs a login.
-- **Sign-up and login** happen on Auth0's hosted page, under Auth0 Attack Protection: bot detection when traffic looks risky, and sign-up throttling (as configured on 2026-11-21).
+- **Sign-up and login** happen on Auth0's hosted page, under Auth0 Attack Protection (checked 2026-11-22): bot detection at medium level, challenging risky logins, sign-ups and password resets; brute-force protection that blocks after 10 failed attempts; and suspicious-IP throttling, which allows 10 sign-ups per IP and adds one back every 6 minutes. Breached-password detection is a paid feature and is off.
 - **The API** applies its own rate limits and per-account data caps (see Security and abuse limits).
 - **No zone rate-limit rule** covers Homyz, since it has no login endpoints of its own.
 
