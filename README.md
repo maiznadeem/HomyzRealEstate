@@ -102,7 +102,7 @@ Names only; the values never go in the repo.
 | `ORIGIN_AUTH_MODE` | Vercel production (Sensitive) | origin lock mode (`enforce`) |
 | `DATABASE_URL` | Vercel production only (Sensitive) | MongoDB connection, as user `homyz-app` |
 | `CRON_SECRET` | Vercel production only (Sensitive) | keep-alive cron |
-| `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Vercel production and preview (Sensitive) | signing image uploads |
+| `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Vercel production only (Sensitive) | signing image uploads |
 | `DOMAIN`, `CLIENT_ID`, `CLIENT_SECRET` | Auth0 Action secrets on *Homyz Real Estate - link accounts by email* | the Action's machine-to-machine app (read and update users) |
 
 - **Not secrets:** `CLOUDINARY_CLOUD_NAME` and `PORT` on Vercel.
@@ -121,7 +121,7 @@ Names only; the values never go in the repo.
 ### Bot protection
 
 - **No Cloudflare bot product is used.** The zone's Bot Fight Mode is off on purpose: the Free plan can't exempt API clients from it. Turnstile isn't needed, because Homyz has no anonymous forms of its own. Contact is a `mailto:` link, and every write needs a login.
-- **Sign-up and login** happen on Auth0's hosted page, under Auth0 Attack Protection: bot detection when traffic looks risky, and sign-up throttling.
+- **Sign-up and login** happen on Auth0's hosted page, under Auth0 Attack Protection: bot detection when traffic looks risky, and sign-up throttling (as configured on 2026-11-21).
 - **The API** applies its own rate limits and per-account data caps (see Security and abuse limits).
 - **No zone rate-limit rule** covers Homyz, since it has no login endpoints of its own.
 
