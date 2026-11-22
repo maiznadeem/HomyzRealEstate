@@ -1,1 +1,0 @@
-{ "redirects": [{ "source": "/(.*)", "destination": "https://homyz.himaiz.com/$1", "permanent": true }] }

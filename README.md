@@ -11,7 +11,7 @@ Homyz Real Estate is live at [**homyz.himaiz.com**](https://homyz.himaiz.com/).
 - **Web:** the Vite build is served by the Cloudflare Worker `homyz-web` (Workers static assets, `client/wrangler.toml`, security headers in `client/public/_headers`). Deploy from `client/` with `CLOUDFLARE_API_TOKEN` set: `npm run deploy`.
 - **API:** `api.homyz.himaiz.com` is the Cloudflare Worker `homyz-api-edge` (`edge/api/`), which forwards to the Vercel project `homyz-real-estate-backend`. It adds a shared secret (`X-Origin-Auth`) and the visitor's address (`X-Client-IP`). With `ORIGIN_AUTH` set and `ORIGIN_AUTH_MODE=enforce`, the API refuses requests that skip Cloudflare (403), except Vercel's own cron call to `/api/keepalive`. The rate limiter trusts `X-Client-IP` only when the secret matches.
 - Both hostnames sit behind the `himaiz.com` zone's Cloudflare WAF. The backend still deploys from Vercel on push to `main`.
-- The old site, `homyz-real-estate.vercel.app` (Vercel project `homyz-real-estate`), now only redirects every path to `homyz.himaiz.com` (`client/vercel.json`).
+- The old Vercel web project (`homyz-real-estate.vercel.app`) was deleted on 2026-11-22; only the backend project remains on Vercel.
 
 ## Key Features
 
