@@ -19,3 +19,10 @@ crons = ["0 6 * * *"]
 
 [observability]
 enabled = true
+# Cloudflare attaches the request URL to every log event; strip its query, which can carry ids and junk from scanners.
+redact_query_string = true
+
+# Only the Worker's own JSON line (LOGGING.md). Cloudflare's per-request invocation log repeats it and records the
+# full URL, query included.
+[observability.logs]
+invocation_logs = false
