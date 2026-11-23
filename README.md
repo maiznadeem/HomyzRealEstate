@@ -80,6 +80,17 @@ Every part deploys on its own when `main` changes:
 - **The site ("Pattern B"):** static assets on Workers, so there's no origin server to bypass. `workers_dev` and `preview_urls` are off. No Worker script runs for the site, so its traffic doesn't count against the account's daily Worker request quota. API requests do count.
 - **Cloud Run's side:** the service allows unauthenticated invocations, because the Worker can't present Google credentials, so the origin lock is what keeps direct `*.run.app` requests out.
 
+### Logging
+
+Both parts follow the shared logging standard (`LOGGING.md` in `maiznadeem/OracleVMOps`). Every line is one JSON object with `time`, `level`, `app` (`homyz`), `part` (`api` or `edge`), `event`, `ray` and `msg`.
+
+- **Requests:** one line per request at each part, with `method`, `route` (the route pattern, such as `/api/residency/:id`, never the raw path), `status` and `ms`.
+  - The API adds the Auth0 user id (`user`) when the request is signed in; it never logs the email.
+  - Health checks, the keep-alive and CORS preflights log at `debug`. Every 5xx and exception logs at `error` with `event=exception`.
+- **One id across both parts:** the edge Worker forwards the visitor's `CF-Ray` to the API as `X-CF-Ray`, after deleting any copy the visitor sent. Cloudflare gives the Worker's own call a new `CF-Ray`, so the API logs `X-CF-Ray` as `ray`. Filter on one ray to see a request at both parts.
+- **Never logged:** bodies, cookies, tokens, `Authorization` headers or emails. Errors log their type, code and stack frames, not their message, because database errors can quote a query. Keys that look like a secret or an email are redacted.
+- **Where:** the API in Cloud Logging (`homyz-backend`), the edge in the Worker's logs. `LOG_LEVEL` (default `info`) sets the API's minimum level.
+
 ### Secrets
 
 Names only; the values never go in the repo.
